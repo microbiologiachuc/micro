@@ -1,0 +1,29 @@
+#camera-container {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: auto;
+}
+#camera--view {
+  width: 100%;
+  height: auto;
+  background: #222;
+}
+#ocr-region {
+  position: absolute;
+  border: 2px dashed red;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+#camera--trigger {
+  display: block;
+  margin: 10px auto;
+  padding: 10px 20px;
+  font-size: 18px;
+}
+#camera--output {
+  display: block;
+  margin: 10px auto;
+  max-width: 100%;
+  border: 1px solid #ccc;
+}
