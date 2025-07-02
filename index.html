@@ -7,7 +7,7 @@
   <style>
     body {
       margin: 0; padding: 0; background: #fff; color: #222;
-      font-family: Calibri, sans-serif;
+      font-family: Arial, sans-serif;
     }
     #camera-container {
       position: relative;
@@ -42,7 +42,7 @@
       font-size: 1.2em;
       color: #39f;
       font-weight: bold;
-      text-shadow: 1px 1px 2px #0008;
+      text-shadow: none;
     }
     /* OCR region (centered, at 65% height) */
     #ocr-region {
@@ -95,7 +95,7 @@
     <div id="reference-region"> Centrar no código de barras</div>
     <div id="ocr-region"></div>
   </div>
-  <button id="capture-btn">Verificar material de colheita</button>
+  <button id="capture-btn">Para onde colher</button>
   <div id="loading">Processing…</div>
   <canvas id="canvas" style="display:none;"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
