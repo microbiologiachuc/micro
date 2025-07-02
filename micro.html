@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Responsive OCR Camera App</title>
+  <style>
+    #camera-container {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      margin: auto;
+    }
+    #camera--view {
+      width: 100%;
+      height: auto;
+      background: #222;
+    }
+    #ocr-region {
+      position: absolute;
+      border: 2px dashed red;
+      box-sizing: border-box;
+      pointer-events: none;
+      /* left/top/width/height set by JS */
+    }
+    #camera--trigger {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 18px;
+    }
+    #camera--output {
+      display: block;
+      margin: 10px auto;
+      max-width: 100%;
+      border: 1px solid #ccc;
+    }
+  </style>
+  <!-- Tesseract.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+</head>
+<body>
+  <div id="camera-container">
+    <video id="camera--view" autoplay playsinline></video>
+    <div id="ocr-region"></div>
+  </div>
+  <button id="camera--trigger">Capture & Recognize Text</button>
+  <img id="camera--output" alt="Captured image will appear here">
+
+  <canvas id="camera--sensor" style="display:none;"></canvas>
+
+  <script>
+    // Elements
+    const cameraView = document.getElementById("camera--view");
+    const cameraOutput = document.getElementById("camera--output");
+    const cameraSensor = document.getElementById("camera--sensor");
+    const cameraTrigger = document.getElementById("camera--trigger");
+    const ocrRegion = document.getElementById("ocr-region");
+    const cameraContainer = document.getElementById("camera-container");
+
+    // Relative OCR region (change as desired; left/top/width/height: 0~1)
+    const region = {
+      left: 0.3,   // 30% from the left
+      top: 0.6,    // 60% from the top
+      width: 0.4,  // 40% of video width
+      height: 0.15 // 15% of video height
+    };
+
+    // Overlay rectangle positioning
+    function positionOverlay() {
+      const rect = cameraView.getBoundingClientRect();
+      // Offset relative to the camera container; use offsetLeft/Top if not full width
+      ocrRegion.style.left   = (rect.width  * region.left) + "px";
+      ocrRegion.style.top    = (rect.height * region.top)  + "px";
+      ocrRegion.style.width  = (rect.width  * region.width)  + "px";
+      ocrRegion.style.height = (rect.height * region.height) + "px";
+    }
+
+    // Set up camera
+    async function cameraStart() {
+      try {
+        const constraints = { video: { facingMode: "environment" }, audio: false };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        cameraView.srcObject = stream;
+      } catch(err) {
+        alert("Camera error: " + err.message);
+      }
+    }
+
+    // On video metadata loaded or window resized, reposition overlay
+    cameraView.addEventListener('loadedmetadata', positionOverlay);
+    window.addEventListener('resize', positionOverlay);
+
+    // Extra: update overlay after short delay in case of mobile rotation
+    setInterval(positionOverlay, 500);
+
+    // Capture and OCR
+    cameraTrigger.onclick = async function() {
+      // Ensure video dimensions are set
+      cameraSensor.width = cameraView.videoWidth;
+      cameraSensor.height = cameraView.videoHeight;
+      const context = cameraSensor.getContext("2d");
+      context.drawImage(cameraView, 0, 0);
+
+      // Calculate crop region in source pixels
+      const x = Math.floor(cameraView.videoWidth  * region.left);
+      const y = Math.floor(cameraView.videoHeight * region.top);
+      const width = Math.floor(cameraView.videoWidth  * region.width);
+      const height = Math.floor(cameraView.videoHeight * region.height);
+
+      // Crop
+      const cropped = context.getImageData(x, y, width, height);
+
+      // Create a temp canvas for OCR region
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = width;
+      tempCanvas.height = height;
+      tempCanvas.getContext("2d").putImageData(cropped, 0, 0);
+
+      // Show full image as preview
+      cameraOutput.src = cameraSensor.toDataURL("image/webp");
+
+      // Run OCR
+      Tesseract.recognize(
+        tempCanvas,
+        'eng',
+        { logger: m => console.log(m) }
+      ).then(({ data: { text } }) => {
+        alert("OCR result:\n" + text.trim());
+      }).catch(e => {
+        alert("OCR error: " + e.message);
+      });
+    };
+
+    // Start camera on load
+    window.addEventListener("load", cameraStart);
+  </script>
+</body>
+</html>
