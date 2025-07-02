@@ -5,24 +5,9 @@
   <title>Centered Regions OCR Camera</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    :root {
-      --ref-top: 28%;
-      --ref-height: 16vw;
-      --ocr-top: 72%;
-      --ocr-height: 16vw;
-    }
     body {
       margin: 0; padding: 0; background: #fff; color: #222;
       font-family: Arial, sans-serif;
-    }
-    #options {
-      margin: 1em auto 0 auto;
-      max-width: 400px;
-      padding: 0.7em 1.2em;
-      background: #f7f7f7;
-      border-radius: 10px;
-      box-shadow: 0 1px 4px #0001;
-      font-size: 1em;
     }
     #camera-container {
       position: relative;
@@ -40,11 +25,11 @@
       display: block;
       background: #000;
     }
-    /* Reference region */
+    /* Reference region (centered, at 28% height) */
     #reference-region {
       position: absolute;
-      width: 50vw; height: var(--ref-height);
-      left: 50%; top: var(--ref-top);
+      width: 50vw; height: 16vw;
+      left: 50%; top: 28%;
       transform: translate(-50%, -50%);
       border: 2.5px dashed #39f;
       background: rgba(0,60,255,0.10);
@@ -59,11 +44,11 @@
       font-weight: bold;
       text-shadow: none;
     }
-    /* OCR region */
+    /* OCR region (centered, at 72% height) */
     #ocr-region {
       position: absolute;
-      width: 25vw; height: var(--ocr-height);
-      left: 50%; top: var(--ocr-top);
+      width: 25vw; height: 16vw;
+      left: 50%; top: 72%;
       transform: translate(-50%, -50%);
       border: 2.5px solid #ffd600;
       background: rgba(255,255,0,0.10);
@@ -99,17 +84,12 @@
       }
       #reference-region, #ocr-region {
         width: 80vw !important;
+        height: 22vw !important;
       }
     }
   </style>
 </head>
 <body>
-  <form id="options">
-    <label><input type="radio" name="region" value="default" checked> Default</label>
-    <label><input type="radio" name="region" value="separate"> Increase Vertical Separation</label>
-    <label><input type="radio" name="region" value="smaller"> Reduce Region Height</label>
-    <label><input type="radio" name="region" value="both"> Combine Both</label>
-  </form>
   <div id="camera-container">
     <video id="video" autoplay playsinline></video>
     <div id="reference-region">Centrar no código de barras</div>
@@ -120,39 +100,6 @@
   <canvas id="canvas" style="display:none;"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <script>
-    // Region options dynamic adjustment
-    const setRegionOption = (option) => {
-      switch(option) {
-        case "default":
-          document.documentElement.style.setProperty('--ref-top', '28%');
-          document.documentElement.style.setProperty('--ocr-top', '72%');
-          document.documentElement.style.setProperty('--ref-height', '16vw');
-          document.documentElement.style.setProperty('--ocr-height', '16vw');
-          break;
-        case "separate":
-          document.documentElement.style.setProperty('--ref-top', '20%');
-          document.documentElement.style.setProperty('--ocr-top', '80%');
-          document.documentElement.style.setProperty('--ref-height', '16vw');
-          document.documentElement.style.setProperty('--ocr-height', '16vw');
-          break;
-        case "smaller":
-          document.documentElement.style.setProperty('--ref-top', '28%');
-          document.documentElement.style.setProperty('--ocr-top', '72%');
-          document.documentElement.style.setProperty('--ref-height', '10vw');
-          document.documentElement.style.setProperty('--ocr-height', '10vw');
-          break;
-        case "both":
-          document.documentElement.style.setProperty('--ref-top', '20%');
-          document.documentElement.style.setProperty('--ocr-top', '80%');
-          document.documentElement.style.setProperty('--ref-height', '10vw');
-          document.documentElement.style.setProperty('--ocr-height', '10vw');
-          break;
-      }
-    };
-    document.getElementById('options').addEventListener('change', (e) => {
-      setRegionOption(e.target.value);
-    });
-
     // Camera setup
     const video = document.getElementById('video');
     function startCamera() {
