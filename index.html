@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mobile OCR Camera App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #222;
+      color: #fff;
+      font-family: sans-serif;
+    }
+    #camera-container {
+      position: relative;
+      width: 100vw;
+      max-width: 100vw;
+      height: 60vw;
+      max-height: 80vh;
+      margin: 1em auto;
+      background: #000;
+      overflow: hidden;
+      touch-action: none;
+    }
+    #video {
+      width: 100vw;
+      max-width: 100vw;
+      height: 60vw;
+      max-height: 80vh;
+      object-fit: cover;
+      display: block;
+      background: #000;
+    }
+    #ocr-region {
+      position: absolute;
+      border: 2.5px dashed #ff0;
+      box-sizing: border-box;
+      background: rgba(255,255,0,0.1);
+      min-width: 50px;
+      min-height: 40px;
+      width: 45vw;
+      height: 20vw;
+      left: 25vw;
+      top: 18vw;
+      border-radius: 8px;
+      z-index: 2;
+      touch-action: none;
+    }
+    #resize-handle {
+      position: absolute;
+      right: 0; bottom: 0;
+      width: 28px; height: 28px;
+      background: rgba(255,255,0,0.5);
+      border-radius: 0 0 8px 0;
+      cursor: nwse-resize;
+      z-index: 3;
+      touch-action: none;
+    }
+    #capture-btn {
+      width: 95vw;
+      max-width: 400px;
+      margin: 1.5em auto 0 auto;
+      display: block;
+      background: #ffd600;
+      color: #222;
+      border: none;
+      font-size: 1.2em;
+      padding: 1em 0.5em;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 3px 8px #0002;
+      transition: background 0.2s;
+    }
+    #capture-btn:active {
+      background: #ffb800;
+    }
+    #loading {
+      display: none;
+      text-align: center;
+      margin-top: 1.5em;
+      color: #ffd600;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    @media (max-width: 600px) {
+      #camera-container, #video {
+        width: 100vw !important;
+        height: 60vw !important;
+      }
+      #ocr-region {
+        width: 50vw !important;
+        height: 20vw !important;
+        left: 25vw !important;
+        top: 18vw !important;
+        min-width: 36px !important;
+        min-height: 24px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="camera-container">
+    <video id="video" autoplay playsinline></video>
+    <div id="ocr-region">
+      <div id="resize-handle"></div>
+    </div>
+  </div>
+  <button id="capture-btn">Capture & OCR</button>
+  <div id="loading">Processing…</div>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+  <script>
+    // Camera setup
+    const video = document.getElementById('video');
+    function startCamera() {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+          .then(stream => video.srcObject = stream)
+          .catch(() => alert('Camera access denied or not available.'));
+      } else {
+        alert('getUserMedia is not supported in this browser.');
+      }
+    }
+    startCamera();
+
+    // Drag and resize logic (mouse + touch)
+    const ocrRegion = document.getElementById('ocr-region');
+    const resizeHandle = document.getElementById('resize-handle');
+    let isDragging = false, isResizing = false;
+    let dragOffsetX = 0, dragOffsetY = 0, initialW = 0, initialH = 0, initialX = 0, initialY = 0, startX = 0, startY = 0;
+
+    function getEventXY(e) {
+      if (e.touches) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      } else {
+        return { x: e.clientX, y: e.clientY };
+      }
+    }
+
+    // Drag logic
+    function dragStart(e) {
+      if (e.target === resizeHandle) return;
+      e.preventDefault();
+      isDragging = true;
+      const { x, y } = getEventXY(e);
+      const rect = ocrRegion.getBoundingClientRect();
+      dragOffsetX = x - rect.left;
+      dragOffsetY = y - rect.top;
+    }
+    function dragMove(e) {
+      if (!isDragging) return;
+      e.preventDefault();
+      const { x, y } = getEventXY(e);
+      const parent = ocrRegion.parentElement.getBoundingClientRect();
+      let left = x - parent.left - dragOffsetX;
+      let top = y - parent.top - dragOffsetY;
+      // Constrain
+      left = Math.max(0, Math.min(left, parent.width - ocrRegion.offsetWidth));
+      top = Math.max(0, Math.min(top, parent.height - ocrRegion.offsetHeight));
+      ocrRegion.style.left = left + 'px';
+      ocrRegion.style.top = top + 'px';
+    }
+    function dragEnd() { isDragging = false; }
+
+    // Resize logic
+    function resizeStart(e) {
+      e.preventDefault();
+      isResizing = true;
+      const { x, y } = getEventXY(e);
+      const rect = ocrRegion.getBoundingClientRect();
+      startX = x;
+      startY = y;
+      initialW = rect.width;
+      initialH = rect.height;
+      initialX = rect.left;
+      initialY = rect.top;
+    }
+    function resizeMove(e) {
+      if (!isResizing) return;
+      e.preventDefault();
+      const { x, y } = getEventXY(e);
+      const dx = x - startX;
+      const dy = y - startY;
+      const parent = ocrRegion.parentElement.getBoundingClientRect();
+      let newW = Math.max(ocrRegion.style.minWidth ? parseInt(ocrRegion.style.minWidth) : 36, initialW + dx);
+      let newH = Math.max(ocrRegion.style.minHeight ? parseInt(ocrRegion.style.minHeight) : 24, initialH + dy);
+      // Constrain within parent
+      newW = Math.min(newW, parent.width - (initialX - parent.left));
+      newH = Math.min(newH, parent.height - (initialY - parent.top));
+      ocrRegion.style.width = newW + 'px';
+      ocrRegion.style.height = newH + 'px';
+    }
+    function resizeEnd() { isResizing = false; }
+
+    // Mouse events
+    ocrRegion.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', dragMove);
+    document.addEventListener('mouseup', dragEnd);
+    resizeHandle.addEventListener('mousedown', resizeStart);
+    document.addEventListener('mousemove', resizeMove);
+    document.addEventListener('mouseup', resizeEnd);
+
+    // Touch events
+    ocrRegion.addEventListener('touchstart', dragStart, { passive: false });
+    document.addEventListener('touchmove', dragMove, { passive: false });
+    document.addEventListener('touchend', dragEnd, { passive: false });
+    resizeHandle.addEventListener('touchstart', resizeStart, { passive: false });
+    document.addEventListener('touchmove', resizeMove, { passive: false });
+    document.addEventListener('touchend', resizeEnd, { passive: false });
+
+    // Capture and OCR
+    document.getElementById('capture-btn').onclick = async function() {
+      const loading = document.getElementById('loading');
+      loading.style.display = 'block';
+
+      // Calculate region in video coordinates
+      const videoRect = video.getBoundingClientRect();
+      const regionRect = ocrRegion.getBoundingClientRect();
+      const sx = regionRect.left - videoRect.left;
+      const sy = regionRect.top - videoRect.top;
+      const sw = regionRect.width;
+      const sh = regionRect.height;
+      if (sw < 10 || sh < 10) {
+        loading.style.display = 'none';
+        alert('OCR region is too small!');
+        return;
+      }
+
+      // Scale to video resolution
+      const scaleX = video.videoWidth / videoRect.width;
+      const scaleY = video.videoHeight / videoRect.height;
+
+      const canvas = document.getElementById('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Crop region
+      const cropped = ctx.getImageData(
+        sx * scaleX, sy * scaleY, sw * scaleX, sh * scaleY
+      );
+      // Put cropped to temp canvas
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = cropped.width;
+      tempCanvas.height = cropped.height;
+      tempCanvas.getContext('2d').putImageData(cropped, 0, 0);
+
+      // OCR
+      try {
+        const { data: { text } } = await Tesseract.recognize(
+          tempCanvas,
+          'eng',
+          { logger: m => console.log(m) }
+        );
+        loading.style.display = 'none';
+        alert('Recognized text:\n' + (text.trim() || '[No text recognized]'));
+      } catch (e) {
+        loading.style.display = 'none';
+        alert('OCR failed: ' + e.message);
+      }
+    };
+  </script>
+</body>
+</html>
