@@ -58,6 +58,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
     #capture-btn {
       width: 95vw; max-width: 400px;
@@ -87,6 +88,14 @@
         height: 22vw !important;
       }
     }
+    #ocr-region img {
+      max-width: 100%; max-height: 100%;
+      display: block;
+      margin: 0 auto;
+      border-radius: 6px;
+      background: #fff;
+      box-shadow: 0 2px 8px #0001;
+    }
   </style>
 </head>
 <body>
@@ -100,6 +109,14 @@
   <canvas id="canvas" style="display:none;"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <script>
+    // 1. Map recognized text (lowercase) to image URLs
+    const textToImageMap = {
+      "apple": "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg",
+      "banana": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg",
+      "orange": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Orange-Fruit-Pieces.jpg"
+      // Add more mappings as needed!
+    };
+
     // Camera setup
     const video = document.getElementById('video');
     function startCamera() {
@@ -117,6 +134,7 @@
     document.getElementById('capture-btn').onclick = async function() {
       const loading = document.getElementById('loading');
       loading.style.display = 'block';
+      document.getElementById('ocr-region').innerHTML = '';
 
       // Calculate OCR region in video coordinates
       const videoRect = video.getBoundingClientRect();
@@ -155,10 +173,18 @@
           { logger: m => console.log(m) }
         );
         loading.style.display = 'none';
-        alert('Recognized text:\n' + (text.trim() || '[No text recognized]'));
+        const recognized = text.trim().toLowerCase();
+        const imgUrl = textToImageMap[recognized];
+
+        if (imgUrl) {
+          document.getElementById('ocr-region').innerHTML = `<img src="${imgUrl}" alt="${recognized}">`;
+        } else {
+          document.getElementById('ocr-region').innerHTML = `<span style="color:red;font-weight:bold;">No matching image found for: "${recognized || '[empty]'}"</span>`;
+        }
       } catch (e) {
         loading.style.display = 'none';
-        alert('OCR failed: ' + e.message);
+        document.getElementById('ocr-region').innerHTML =
+          '<span style="color:#c00;">OCR failed: ' + e.message + '</span>';
       }
     };
   </script>
