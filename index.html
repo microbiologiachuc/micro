@@ -129,7 +129,7 @@
   
   <button id="capture-btn">TESTE 2</button>
   
-  <div id="loading">Processing…</div>
+  <div id="loading">A verificar…</div>
   <canvas id="canvas" style="display:none;"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <script>
@@ -194,7 +194,7 @@
       try {
         const { data: { text } } = await Tesseract.recognize(
           tempCanvas,
-          'eng',
+          'por',
           {
             logger: m => console.log(m),
             tessedit_char_blacklist: '0123456789'
