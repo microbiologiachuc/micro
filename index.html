@@ -27,7 +27,7 @@
     }
     #reference-region {
       position: absolute;
-      width: 40vw; height: 10vw;
+      width: 40vw; height: 8vw;
       left: 50%; top: 28%;
       transform: translate(-50%, -50%);
       border: 2.5px dashed #39f;
@@ -45,8 +45,8 @@
     }
     #ocr-region {
       position: absolute;
-      width: 40vw; height: 10vw;
-      left: 50%; top: 50%;
+      width: 50vw; height: 10vw;
+      left: 50%; top: 60%;
       transform: translate(-50%, -50%);
       border: 2.5px solid #ffd600;
       background: rgba(255,255,0,0.10);
@@ -59,8 +59,8 @@
       overflow: hidden;
     }
     #capture-btn {
-      width: 75vw; max-width: 400px;
-      margin: 0.5em auto 0 auto; display: block;
+      width: 95vw; max-width: 400px;
+      margin: 1.5em auto 0 auto; display: block;
       background: #abdaf5; color: #222;  
       border: none; font-size: 1.2em;
       padding: 1em 0.5em; border-radius: 6px;
@@ -73,7 +73,7 @@
     }
     #loading {
       display: none; text-align: center;
-      margin-top: 0.5em; color: #abdaf5;
+      margin-top: 1.5em; color: #ffd600;
       font-weight: bold; font-size: 1.2em;
     }
     /* Image region below the button, auto-sizing to image */
@@ -87,13 +87,13 @@
       box-shadow: 0 2px 8px #0002;
       overflow: hidden;
       width: 95vw;
-      height: 70vh;
+      height: 85vh;
       transition: background 0.2s;
     }
     #image-result-region img {
       display: block;
       max-width: 100%;
-      max-height:70vh;
+      max-height: 95vh;
       object-fit: contain;
       border-radius: 10px;
       background: #fff;
@@ -106,15 +106,15 @@
       }
       #reference-region {
         width: 40vw !important;
-        height: 10vw !important;
+        height: 8vw !important;
       }
       #ocr-region {
-        width: 40vw !important;
+        width: 50vw !important;
         height: 10vw !important;
       }
       #image-result-region {
         max-width: 95vw !important;
-        max-height: 70vw !important;
+        max-height: 95vw !important;
       }
     }
   </style>
@@ -125,12 +125,9 @@
     <div id="reference-region">«- código barras -»</div>
     <div id="ocr-region"></div>
   </div>
-    <!-- Image result region appears ABOVE the button -->
+  <button id="capture-btn">TESTE 2</button>
   <div id="image-result-region"></div>
-  
-  <button id="capture-btn">Para onde colher</button>
-  
-  <div id="loading">A verificar…</div>
+  <div id="loading">Processing…</div>
   <canvas id="canvas" style="display:none;"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <script>
@@ -155,7 +152,7 @@
     }
     startCamera();
 
-    // Capture and OCR
+    // Capture and OCR (with numbers blacklisted)
     document.getElementById('capture-btn').onclick = async function() {
       const loading = document.getElementById('loading');
       loading.style.display = 'block';
@@ -191,12 +188,15 @@
       tempCanvas.height = cropped.height;
       tempCanvas.getContext('2d').putImageData(cropped, 0, 0);
 
-      // OCR
+      // OCR with numbers blacklisted
       try {
         const { data: { text } } = await Tesseract.recognize(
           tempCanvas,
           'eng',
-          { logger: m => console.log(m) }
+          {
+            logger: m => console.log(m),
+            tessedit_char_blacklist: '0123456789'
+          }
         );
         loading.style.display = 'none';
         const recognized = text.trim().toLowerCase();
@@ -208,14 +208,11 @@
           img.src = imgUrl;
           img.alt = recognized;
           img.onload = function() {
-            // Optional: If you want to set the region's size to match the image (within constraints)
-            // imageRegion.style.width = this.naturalWidth + "px";
-            // imageRegion.style.height = this.naturalHeight + "px";
             imageRegion.innerHTML = '';
             imageRegion.appendChild(img);
           };
         } else {
-          imageRegion.innerHTML = `<span style="display:block; text-align:center; color:black; font-weight:bold;">Sem correspondência para: "${recognized || '[empty]'}".<br>Tente novamente.</span>`;
+          imageRegion.innerHTML = `<div style="text-align:center; color:black; font-weight:bold;">Sem correspondência para: "${recognized || '[empty]'}".<br>Tente novamente.</div>`;
         }
       } catch (e) {
         loading.style.display = 'none';
