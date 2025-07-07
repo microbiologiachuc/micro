@@ -215,8 +215,7 @@
             imageRegion.appendChild(img);
           };
         } else {
-          imageRegion.innerHTML = `<span style="color:black;font-weight:bold;">Sem correspondência para: "${recognized || '[empty]'}". Tente novamente.</span>`;
-          imageRegion.innerHTML = `<span style="color:black;font-weight:bold;">Tente novamente.</span>`;
+          imageRegion.innerHTML = `<span style="color:black;font-weight:bold;">Sem correspondência para: "${recognized || '[empty]'}".<br>Tente novamente.</span>`;
         }
       } catch (e) {
         loading.style.display = 'none';
