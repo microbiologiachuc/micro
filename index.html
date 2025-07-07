@@ -25,7 +25,6 @@
       display: block;
       background: #000;
     }
-    /* Reference region (centered, at 28% height) */
     #reference-region {
       position: absolute;
       width: 40vw; height: 15vw;
@@ -44,7 +43,6 @@
       font-weight: bold;
       text-shadow: none;
     }
-    /* OCR region (centered, at 72% height) */
     #ocr-region {
       position: absolute;
       width: 60vw; height: 15vw;
@@ -87,17 +85,35 @@
         width: 50vw !important;
         height: 10vw !important;
       }
-      
       #ocr-region {
         width: 60vw !important;
         height: 15vw !important;
       }
+      #image-result-region {
+        width: 90vw !important;
+        height: 30vw !important;
+      }
     }
-    #ocr-region img {
-      max-width: 100%; max-height: 100%;
+    /* Image display region below the button with desired dimensions */
+    #image-result-region {
+      width: 320px;
+      height: 180px;
+      margin: 24px auto 0 auto;
+      background: #f7f7f7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #0002;
+      overflow: hidden;
+      transition: background 0.2s;
+    }
+    #image-result-region img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
       display: block;
-      margin: 0 auto;
-      border-radius: 6px;
+      border-radius: 10px;
       background: #fff;
       box-shadow: 0 2px 8px #0001;
     }
@@ -109,9 +125,9 @@
     <div id="reference-region">«- código barras -»</div>
     <div id="ocr-region"></div>
   </div>
-  <!-- Fixed image display region at bottom -->
-  <div id="image-result-region"></div>
   <button id="capture-btn">OUTRA</button>
+  <!-- Image result region appears below the button -->
+  <div id="image-result-region"></div>
   <div id="loading">Processing…</div>
   <canvas id="canvas" style="display:none;"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
