@@ -6,13 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { margin: 0; font-family: sans-serif; background: #fafbfc; }
-    .container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+    .container { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 100vh; }
+    .top-img { width: 100vw; max-height: 40vh; object-fit: cover; margin-bottom: 24px; }
     .search-box { margin-bottom: 20px; }
     .result-img { max-width: 100vw; max-height: 50vh; border-radius: 10px; box-shadow: 0 2px 8px #0002; }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Top picture here -->
+    <img class="top-img" src="YOUR_TOP_IMAGE.jpg" alt="Top Picture">
+    
     <form class="search-box" onsubmit="showImage(event)">
       <input type="text" id="searchInput" placeholder="Type: cat, dog, apple, etc." required />
       <button type="submit">Procurar</button>
