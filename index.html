@@ -74,14 +74,14 @@
 <body>
   <div class="container">
     <!-- Top image - replace the src with your actual image file or URL -->
-    <img class="top-img" src="YOUR_TOP_IMAGE.jpg" alt="Top Picture">
+    <img class="top-img" src="standard.gif" alt="Top Picture">
     
     <form class="search-box" onsubmit="showImage(event)">
       <input type="text" id="searchInput" placeholder="Type: cat, dog, apple, etc." required />
       <button type="submit">Procurar</button>
     </form>
   </div>
-  <img id="result" class="result-img" src="standard.gif" alt="">
+  <img id="result" class="result-img" src="" alt="">
   <script>
     // Map search terms to image URLs (add your own images as needed)
     const imageMap = {
