@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      margin: 0; 
-      font-family: sans-serif; 
+      margin: 0;
+      font-family: sans-serif;
       background: #fafbfc;
       min-height: 100vh;
     }
@@ -82,22 +82,23 @@
 
   <script>
     const imageMap = {
-      c.esterelizado fezes: "https://raw.githubusercontent.com/frade123456/micro/main/cat.jpg",
-      dog: "https://via.placeholder.com/400x300?text=Cão",
-      apple: "https://via.placeholder.com/400x300?text=Maçã",
-      banana: "https://via.placeholder.com/400x300?text=Banana",
-      car: "https://via.placeholder.com/400x300?text=Carro",
-      tree: "https://via.placeholder.com/400x300?text=Árvore",
-      beach: "https://via.placeholder.com/400x300?text=Praia",
-      mountain: "https://via.placeholder.com/400x300?text=Montanha",
-      city: "https://via.placeholder.com/400x300?text=Cidade"
+      "cat": "https://via.placeholder.com/400x300?text=Gato",
+      "dog": "https://via.placeholder.com/400x300?text=Cão",
+      "apple": "https://via.placeholder.com/400x300?text=Maçã",
+      "banana": "https://via.placeholder.com/400x300?text=Banana",
+      "car": "https://via.placeholder.com/400x300?text=Carro",
+      "tree": "https://via.placeholder.com/400x300?text=Árvore",
+      "beach": "https://via.placeholder.com/400x300?text=Praia",
+      "mountain": "https://via.placeholder.com/400x300?text=Montanha",
+      "city": "https://via.placeholder.com/400x300?text=Cidade",
+      "c.esterelizado fezes": "https://via.placeholder.com/400x300?text=Gato"
     };
 
     function showImage(event) {
       event.preventDefault();
       const input = document.getElementById('searchInput').value.trim().toLowerCase();
       const img = document.getElementById('result');
-      
+
       if (imageMap[input]) {
         img.src = imageMap[input];
         img.alt = input;
