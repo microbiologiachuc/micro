@@ -5,7 +5,12 @@
   <title>Text Input Image Search</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { margin: 0; font-family: sans-serif; background: #fafbfc; }
+    body {
+      margin: 0; 
+      font-family: sans-serif; 
+      background: #fafbfc;
+      min-height: 100vh;
+    }
     .container {
       display: flex;
       flex-direction: column;
@@ -13,12 +18,13 @@
       justify-content: flex-start;
       min-height: 100vh;
       padding-top: 20px;
+      position: relative;
     }
     .top-img {
       width: 100vw;
-      max-height: 30vh;
+      max-height: 40vh;
       object-fit: cover;
-      margin-bottom: 10px;
+      margin-bottom: 24px;
     }
     .search-box {
       margin-bottom: 20px;
@@ -50,29 +56,36 @@
       background: #1565c0;
     }
     .result-img {
-      max-width: 100vw;
-      max-height: 50vh;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px #0002;
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100vw;
+      max-height: 35vh;
+      object-fit: contain;
+      border-radius: 10px 10px 0 0;
+      box-shadow: 0 -2px 8px #0003;
+      background: #fff;
+      z-index: 999;
       display: none;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- Top image - replace the src with your actual image file or URL -->
-    <img class="top-img" src="standard.gif" alt="Top Picture">
+    <img class="top-img" src="YOUR_TOP_IMAGE.jpg" alt="Top Picture">
     
     <form class="search-box" onsubmit="showImage(event)">
-      <input type="text" id="searchInput" placeholder="Texto da etiqueta" required />
+      <input type="text" id="searchInput" placeholder="Type: cat, dog, apple, etc." required />
       <button type="submit">Procurar</button>
     </form>
-    <img id="result" class="result-img" src="standard.gif" alt="">
   </div>
+  <img id="result" class="result-img" src="standard.gif" alt="">
   <script>
     // Map search terms to image URLs (add your own images as needed)
     const imageMap = {
-      cat:      "standard.gif",
+      cat:      "https://placekitten.com/400/300",
       dog:      "https://placedog.net/400/300",
       apple:    "https://via.placeholder.com/400x300?text=Apple",
       banana:   "https://via.placeholder.com/400x300?text=Banana",
