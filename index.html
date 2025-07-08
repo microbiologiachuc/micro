@@ -8,14 +8,14 @@
     body { margin: 0; font-family: sans-serif; background: #fafbfc; }
     .container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
     .search-box { margin-bottom: 20px; }
-    .result-img { max-width: 80vw; max-height: 50vh; border-radius: 10px; box-shadow: 0 2px 8px #0002; }
+    .result-img { max-width: 100vw; max-height: 50vh; border-radius: 10px; box-shadow: 0 2px 8px #0002; }
   </style>
 </head>
 <body>
   <div class="container">
     <form class="search-box" onsubmit="showImage(event)">
       <input type="text" id="searchInput" placeholder="Type: cat, dog, apple, etc." required />
-      <button type="submit">Search</button>
+      <button type="submit">Procurar</button>
     </form>
     <img id="result" class="result-img" src="https://barcodes.co.nz/sample-barcode-images/" alt="" style="display: none;">
   </div>
