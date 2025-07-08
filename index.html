@@ -56,5 +56,25 @@
       padding: 12px;
       font-size: 1em;
       border-radius: 6px;
-      border:
-
+      border: none;
+      background-color: #2979ff;
+      color: #fff;
+      cursor: pointer;
+    }
+    .search-box button:hover {
+      background-color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-half">
+    <img src="https://via.placeholder.com/300x200.png?text=Your+Image" alt="Top Image" />
+  </div>
+  <div class="bottom-half">
+    <form class="search-box" onsubmit="event.preventDefault(); /* Add your JS here */">
+      <input type="text" placeholder="Search for text in database..." name="search" required />
+      <button type="submit">Search</button>
+    </form>
+  </div>
+</body>
+</html>
