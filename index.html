@@ -6,23 +6,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { margin: 0; font-family: sans-serif; background: #fafbfc; }
-    .container { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 100vh; }
-    .top-img { width: 100vw; max-height: 40vh; object-fit: cover; margin-bottom: 24px; }
-    .search-box { margin-bottom: 20px; width: 350px; }
-    .search-box input[type="text"] { font-size: 1.2em; padding: 12px; width: 100%; box-sizing: border-box; }
-    .result-img { max-width: 100vw; max-height: 50vh; border-radius: 10px; box-shadow: 0 2px 8px #8dc7f0; }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding-top: 20px;
+    }
+    .top-img {
+      width: 100vw;
+      max-height: 40vh;
+      object-fit: cover;
+      margin-bottom: 24px;
+    }
+    .search-box {
+      margin-bottom: 20px;
+      width: 350px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .search-box input[type="text"] {
+      font-size: 1.2em;
+      padding: 12px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 16px;
+    }
+    .search-box button {
+      font-size: 1.2em;
+      padding: 14px 32px;
+      border-radius: 8px;
+      background: #2979ff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: block;
+      margin: 0 auto;
+    }
+    .search-box button:hover {
+      background: #1565c0;
+    }
+    .result-img {
+      max-width: 100vw;
+      max-height: 50vh;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #0002;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Top picture here -->
+    <!-- Top image - replace the src with your actual image file or URL -->
     <img class="top-img" src="standard.gif" alt="Top Picture">
     
     <form class="search-box" onsubmit="showImage(event)">
-      <input type="text" id="searchInput" placeholder="texto da etiqueta" required />
+      <input type="text" id="searchInput" placeholder="Texto da etiqueta" required />
       <button type="submit">Procurar</button>
     </form>
-    <img id="result" class="result-img" src="standard.gif" alt="" style="display: none;">
+    <img id="result" class="result-img" src="standard.gif" alt="">
   </div>
   <script>
     // Map search terms to image URLs (add your own images as needed)
