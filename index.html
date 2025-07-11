@@ -58,18 +58,17 @@
       background: #e86915;
     }
     .result-img {
-      position: fixed;
-      left: 0;
-      bottom: 0;
-      width: 100vw;
-      height: 35vh;
-      object-fit: contain;
-      border-radius: 10px 10px 0 0;
-      box-shadow: 0 -2px 8px #0003;
-      background: #fff;
-      z-index: 999;
-      display: none;
-    }
+  width: 100%;
+  max-height: 35vh;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #0003;
+  background: #fff;
+  z-index: 1; /* opcional, pode ajustar se houver sobreposição */
+  display: none;
+  margin-top: 1rem; /* espaço em relação ao elemento acima */
+}
+    
   </style>
 </head>
 <body>
