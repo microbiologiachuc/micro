@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Pesquisa por Imagem</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       margin: 0;
@@ -39,9 +39,9 @@
       width: 100%;
       box-sizing: border-box;
       margin-bottom: 16px;
-      background-color: #FFFFFF; /* white background */
-      color: #333;              /* dark text */
-      border: 1px solid #1565c0; /* blue border */
+      background-color: #fff;
+      color: #333;
+      border: 1px solid #1565c0;
       border-radius: 3px;
     }
     .search-box button {
@@ -57,63 +57,89 @@
     .search-box button:hover {
       background: #e86915;
     }
-    .result-img {
-  width: 100%;
-  max-height: 35vh;
-  object-fit: contain;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px #1565c0, 0 -2px 4px #1565c0;
-  background: #1565c0;
-  z-index: 1; /* opcional, pode ajustar se houver sobreposição */
-  display: block;
-  margin-top: 1rem; /* espaço em relação ao elemento acima */
-}
-    
+
+    /* Caixa que sempre aparece */
+    #imageContainer {
+      width: 100%;
+      min-height: 35vh;          /* garante espaço mesmo sem imagem */
+      background: #1565c0;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px #1565c0, 0 -2px 4px #1565c0;
+      margin-top: 1rem;
+      display: flex;             /* para centralizar conteúdo */
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.2em;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #result {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+      border-radius: 10px;
+      display: none; /* só aparece quando a imagem é carregada */
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <img class="top-img" src="standard.gif" alt="Top Picture">
-    
+    <img class="top-img" src="standard.gif" alt="Top Picture" />
+
     <form class="search-box" onsubmit="showImage(event)">
-      <input type="text" id="searchInput" placeholder="Colar aqui texto da etiqueta" required />
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Colar aqui texto da etiqueta"
+        required
+      />
       <button type="submit">Procurar</button>
     </form>
+  </div>
 
-  <img id="result" class="result-img" src="" alt="">
-     
+  <!-- Caixa da imagem sempre visível -->
+  <div id="imageContainer">
+    <span id="placeholderText">Nenhuma imagem carregada.</span>
+    <img id="result" src="" alt="" />
+  </div>
+
   <div style="text-align: center; padding: 20px; color: #555;">
     MICROBIOLOGIA
 
-<footer style="text-align: center; padding: 20px; color: #555;">
-  TESTE
-</footer>
-    
-</div>
- 
+    <footer style="text-align: center; padding: 20px; color: #555;">TESTE</footer>
+  </div>
 
   <script>
     const imageMap = {
-      "zaragatoa meio trans": "https://raw.githubusercontent.com/frade123456/micro/main/cat.jpg",
-      "dog": "https://raw.githubusercontent.com/frade123456/micro/main/dog.jpeg",
+      "zaragatoa meio trans":
+        "https://raw.githubusercontent.com/frade123456/micro/main/cat.jpg",
+      dog: "https://raw.githubusercontent.com/frade123456/micro/main/dog.jpeg",
     };
 
     function showImage(event) {
       event.preventDefault();
-      const input = document.getElementById('searchInput').value.trim().toLowerCase();
-      const img = document.getElementById('result');
+
+      const input = document
+        .getElementById("searchInput")
+        .value.trim()
+        .toLowerCase();
+
+      const img = document.getElementById("result");
+      const placeholder = document.getElementById("placeholderText");
 
       if (imageMap[input]) {
         img.src = imageMap[input];
         img.alt = input;
-        img.style.display = 'block';
+        img.style.display = "block";
+        placeholder.style.display = "none";
       } else {
-        img.style.display = 'block';
+        img.style.display = "none";
+        placeholder.style.display = "block";
         alert("Nenhuma imagem encontrada. Tente novamente.");
       }
     }
   </script>
-
-  
 </body>
 </html>
