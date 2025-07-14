@@ -1,88 +1,71 @@
-<html lang=”en”>
-	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-		<!-- Name of the app -->
-		<title>Camera App</title>
-
-		<!-- Link to main style sheet -->
-		<link rel="stylesheet" href="style.css"> 
-	</head>
-	<body>
-
-		<div id="camera-container" style="position: relative; width: 100%; max-width: 480px; margin: auto;">
-  		<video id="camera--view" autoplay playsinline></video>
-  		<div id="ocr-region"></div>
-		</div>
-
-<button id="camera--trigger">Capture & Recognize Text</button>
-<img id="camera--output" alt="Captured image will appear here">
-<canvas id="camera--sensor" style="display:none;"></canvas>
-
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
-
-<script>
-  const cameraView = document.getElementById("camera--view");
-  const cameraOutput = document.getElementById("camera--output");
-  const cameraSensor = document.getElementById("camera--sensor");
-  const cameraTrigger = document.getElementById("camera--trigger");
-  const ocrRegion = document.getElementById("ocr-region");
-
-  // Relative OCR region (change as needed)
-  const region = { left: 0.3, top: 0.6, width: 0.4, height: 0.15 };
-
-  function positionOverlay() {
-    const rect = cameraView.getBoundingClientRect();
-    ocrRegion.style.left   = (rect.width  * region.left) + "px";
-    ocrRegion.style.top    = (rect.height * region.top)  + "px";
-    ocrRegion.style.width  = (rect.width  * region.width)  + "px";
-    ocrRegion.style.height = (rect.height * region.height) + "px";
-  }
-
-  async function cameraStart() {
-    try {
-      const constraints = { video: { facingMode: "environment" }, audio: false };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      cameraView.srcObject = stream;
-    } catch(err) {
-      alert("Camera error: " + err.message + "\n\nTip: Make sure you allowed camera access and are running this over HTTPS or localhost.");
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>Duas Imagens Simples</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #fafbfc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
-  }
 
-  cameraView.addEventListener('loadedmetadata', positionOverlay);
-  window.addEventListener('resize', positionOverlay);
-  setInterval(positionOverlay, 500);
+    .top-img {
+      width: 100%;
+      max-height: 40vh;
+      object-fit: cover;
+      display: block;
+    }
 
-  cameraTrigger.onclick = async function() {
-    cameraSensor.width = cameraView.videoWidth;
-    cameraSensor.height = cameraView.videoHeight;
-    const context = cameraSensor.getContext("2d");
-    context.drawImage(cameraView, 0, 0);
-    const x = Math.floor(cameraView.videoWidth  * region.left);
-    const y = Math.floor(cameraView.videoHeight * region.top);
-    const width = Math.floor(cameraView.videoWidth  * region.width);
-    const height = Math.floor(cameraView.videoHeight * region.height);
-    const cropped = context.getImageData(x, y, width, height);
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = width;
-    tempCanvas.height = height;
-    tempCanvas.getContext("2d").putImageData(cropped, 0, 0);
-    cameraOutput.src = cameraSensor.toDataURL("image/webp");
-    Tesseract.recognize(
-      tempCanvas,
-      'eng',
-      { logger: m => console.log(m) }
-    ).then(({ data: { text } }) => {
-      alert("OCR result:\n" + text.trim());
-    }).catch(e => {
-      alert("OCR error: " + e.message);
-    });
-  };
+    .bottom-img-container {
+      width: 100%;
+      max-width: 600px;
+      margin-top: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-  window.addEventListener("load", cameraStart);
-</script>
+    .bottom-img {
+      max-width: 100%;
+      max-height: 30vh;
+      object-fit: contain;
+    }
 
-	</body>
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #555;
+      font-size: 10px;
+    }
+
+    footer img {
+      margin-top: 0.5rem;
+      max-height: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Imagem do topo -->
+  <img class="top-img" src="standard.gif" alt="Imagem Topo" />
+
+  <!-- Imagem de baixo -->
+  <div class="bottom-img-container">
+    <img class="bottom-img" src="segunda_imagem.png" alt="Imagem Inferior" />
+  </div>
+
+  <!-- Rodapé -->
+  <footer>
+    Sector de Bacteriologia, Laboratório de Microbiologia, <br>
+    <strong>Serviço de Patologia Clínica</strong><br>
+    <img src="ulscoimbra_logo.png" alt="Logo">
+  </footer>
+
+</body>
 </html>
