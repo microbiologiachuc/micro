@@ -77,12 +77,15 @@
 
   <!-- Script para animar entrada das imagens -->
   <script>
-    window.addEventListener("load", () => {
-      document.querySelectorAll('.img-container').forEach(el => {
+  window.addEventListener("load", () => {
+    const containers = document.querySelectorAll('.img-container');
+    containers.forEach((el, i) => {
+      setTimeout(() => {
         el.classList.add('loaded');
-      });
+      }, i * 400); // 0ms para a primeira imagem, 400ms para a segunda
     });
-  </script>
+  });
+</script>
 
 </body>
 </html>
