@@ -15,27 +15,20 @@
       min-height: 100vh;
     }
 
-    .top-img {
-      width: 80%;
-      max-height: 40vh;
-      object-fit: cover;
-      display: block;
-      margin: 0 auto;
-    }
-
-    .bottom-img-container {
+    .img-container {
       width: 80%;
       max-width: 600px;
-      margin-top: 3rem;
+      margin-top: 2rem;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    .bottom-img {
+    .img-container img {
       max-width: 100%;
       max-height: 30vh;
       object-fit: contain;
+      display: block;
     }
 
     footer {
@@ -54,30 +47,29 @@
 <body>
 
   <p style="font-size: 1.2em; margin: 1.5rem 0; text-align: center;">
-  Em estudos microbiológicos estão disponíveis várias etiquetas.
+    Em estudos microbiológicos estão disponíveis várias etiquetas.
     <br>
-  <b>Selecione abaixo o tipo que está a usar:</b>
-   <br>
-    <br>
+    <b>Selecione abaixo o tipo que está a usar:</b>
+    <br><br>
   </p>
- 
-  
-  <!-- Imagem do topo com link -->
-  <a href="https://www.abola.pt">
-    <img class="top-img" src="imagemA.png" alt="Imagem Topo" />
-  </a>
+
+  <!-- Imagem do topo com link (uniformizada) -->
+  <div class="img-container">
+    <a href="https://www.abola.pt">
+      <img src="imagemA.png" alt="Imagem Topo" />
+    </a>
+  </div>
 
   <!-- Imagem de baixo com link -->
-  <div class="bottom-img-container">
+  <div class="img-container">
     <a href="https://www.dn.pt">
-      <img class="bottom-img" src="imagemB.png" alt="Imagem Inferior" />
+      <img src="imagemB.png" alt="Imagem Inferior" />
     </a>
   </div>
 
   <!-- Rodapé -->
   <footer>
-    <br>
-    <br>
+    <br><br>
     Sector de Bacteriologia, Laboratório de Microbiologia, <br>
     <strong>Serviço de Patologia Clínica</strong><br>
     <img src="ulscoimbra_logo.png" alt="Logo">
