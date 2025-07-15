@@ -132,12 +132,10 @@
   const searchInput = document.getElementById("searchInput");
   const defaultText = "1. Inserir texto assinalado";
 
-  // Quando clica no campo, limpa o texto se for o texto por defeito
-  searchInput.addEventListener("focus", function () {
-    if (this.value === defaultText) {
-      this.value = "";
-    }
-  });
+  // Sempre que houver clique/toque, limpa o campo
+searchInput.addEventListener("pointerdown", function () {
+  this.value = "";
+});
 
   // Se sair do campo sem escrever nada, repõe o texto por defeito
   searchInput.addEventListener("blur", function () {
