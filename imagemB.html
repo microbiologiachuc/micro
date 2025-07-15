@@ -150,6 +150,10 @@
         placeholder.style.display = "block";
         alert("Nenhuma imagem encontrada. Tente novamente.");
         document.getElementById("searchInput").value = "";
+        document.getElementById("searchInput").focus();
+        document.getElementById("searchInput").addEventListener("focus", function () {
+  this.value = "";
+});
       }
     }
   </script>
