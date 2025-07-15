@@ -14,51 +14,58 @@
       flex-direction: column;
       align-items: center;
     }
+
     .container {
       width: 100%;
       max-width: 600px;
       padding: 10px;
       box-sizing: border-box;
     }
+
     .top-img {
       width: 90%;
-      max-height: 40vh;
+      max-height: 50vh;
       object-fit: cover;
-      margin-bottom: 12px;
+      margin: 0 auto 40px auto;
       display: block;
     }
+
     .search-box {
       margin-bottom: 20px;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
+
     .search-box input[type="text"] {
       font-size: 1.2em;
       padding: 12px;
-      width: 80%;
+      width: 70%;
       box-sizing: border-box;
-      margin-bottom: 16px;
       background-color: #fff;
       color: #333;
       border: 1px solid #1565c0;
       border-radius: 3px;
+      margin-bottom: 0;
     }
+
     .search-box button {
       font-size: 1.2em;
-      padding: 14px 32px;
-      border-radius: 8px;
+      padding: 14px 24px;
+      border-radius: 1px;
       background: #ff9429;
       color: #fff;
       border: none;
       cursor: pointer;
       transition: background 0.2s;
     }
+
     .search-box button:hover {
-      background: #e86915;
+      background: #83a321;
     }
 
-    /* Área da imagem sempre visível */
     #imageContainer {
       width: 100%;
       max-width: 600px;
@@ -87,7 +94,7 @@
 </head>
 <body>
 
- <p style="font-size: 1.2em; margin-block: 1.0rem 0.5rem; text-align: center;">
+  <p style="font-size: 1.2em; margin-block: 1.0rem 0.5rem; text-align: center;">
     Siga abaixo os <b>passos 1 a 3</b>.
   </p>
   
@@ -95,54 +102,72 @@
     <img class="top-img" src="imagemA2.png" alt="Top Picture" />
 
     <form class="search-box" onsubmit="showImage(event)">
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="1. Inserir texto assinalado"
-        required
-      />
-      <button type="submit">2. Ir</button>
+        <input
+          type="text"
+          id="searchInput"
+          value="1. Inserir texto assinalado"
+          required
+        />
+    <button type="submit">2. Ir</button>
     </form>
   </div>
+
   <div id="imageContainer">
     <span id="placeholderText">3. Ver material de colheita a usar</span>
     <img id="result" src="" alt="" />
   </div>
 
-    <footer style="text-align: center; padding: 20px; color: #555; font-size: 10px;">
-      Sector de Bacteriologia, Laboratório de Microbiologia, <br>
-      <strong>Serviço de Patologia Clínica</strong><br>
-      <img src="ulscoimbra_logo.png" alt="Logo" style="margin-top: 0px; max-height: 30px;">
-    </footer>
+  <footer style="text-align: center; padding: 20px; color: #555; font-size: 10px;">
+    Sector de Bacteriologia, Laboratório de Microbiologia, <br>
+    <strong>Serviço de Patologia Clínica</strong><br>
+    <img src="ulscoimbra_logo.png" alt="Logo" style="margin-top: 0px; max-height: 30px;">
+  </footer>
 
   <script>
-    const imageMap = {
-      "zaragatoa meio trans": "https://raw.githubusercontent.com/frade123456/micro/main/cat.jpg",
-      dog: "https://raw.githubusercontent.com/frade123456/micro/main/dog.jpeg",
-    };
+  const imageMap = {
+    "zaragatoa meio trans": "https://raw.githubusercontent.com/frade123456/micro/main/cat.jpg",
+    "c. esterilizado": "https://raw.githubusercontent.com/frade123456/micro/main/dog.jpeg",
+  };
 
-    function showImage(event) {
-      event.preventDefault();
+  const searchInput = document.getElementById("searchInput");
+  const defaultText = "1. Inserir texto assinalado";
 
-      const input = document
-        .getElementById("searchInput")
-        .value.trim()
-        .toLowerCase();
+  // Sempre que houver clique/toque, limpa o campo
+searchInput.addEventListener("pointerdown", function () {
+  this.value = "";
+});
 
-      const img = document.getElementById("result");
-      const placeholder = document.getElementById("placeholderText");
-
-      if (imageMap[input]) {
-        img.src = imageMap[input];
-        img.alt = input;
-        img.style.display = "block";
-        placeholder.style.display = "none";
-      } else {
-        img.style.display = "none";
-        placeholder.style.display = "block";
-        alert("Nenhuma imagem encontrada. Tente novamente.");
-      }
+  // Se sair do campo sem escrever nada, repõe o texto por defeito
+  searchInput.addEventListener("blur", function () {
+    if (this.value.trim() === "") {
+      this.value = defaultText;
     }
-  </script>
+  });
+
+  function showImage(event) {
+    event.preventDefault();
+
+    const input = searchInput.value.trim().toLowerCase();
+
+    const img = document.getElementById("result");
+    const placeholder = document.getElementById("placeholderText");
+
+    if (imageMap[input]) {
+      img.src = imageMap[input];
+      img.alt = input;
+      img.style.display = "block";
+      placeholder.style.display = "none";
+    } else {
+      img.style.display = "none";
+      placeholder.style.display = "block";
+      alert("Nenhuma imagem encontrada. Tente novamente.");
+      searchInput.value = defaultText;
+      searchInput.blur(); // tira o foco
+    }
+  }
+</script>
+
+
+
 </body>
 </html>
