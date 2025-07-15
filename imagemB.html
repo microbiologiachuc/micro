@@ -129,18 +129,27 @@
     "c. esterilizado": "https://raw.githubusercontent.com/frade123456/micro/main/dog.jpeg",
   };
 
-  // Apaga o conteúdo (inclusive texto por defeito em value)
-  document.getElementById("searchInput").addEventListener("pointerdown", function () {
-    this.value = "";
+  const searchInput = document.getElementById("searchInput");
+  const defaultText = "1. Inserir texto assinalado";
+
+  // Quando clica no campo, limpa o texto se for o texto por defeito
+  searchInput.addEventListener("focus", function () {
+    if (this.value === defaultText) {
+      this.value = "";
+    }
+  });
+
+  // Se sair do campo sem escrever nada, repõe o texto por defeito
+  searchInput.addEventListener("blur", function () {
+    if (this.value.trim() === "") {
+      this.value = defaultText;
+    }
   });
 
   function showImage(event) {
     event.preventDefault();
 
-    const input = document
-      .getElementById("searchInput")
-      .value.trim()
-      .toLowerCase();
+    const input = searchInput.value.trim().toLowerCase();
 
     const img = document.getElementById("result");
     const placeholder = document.getElementById("placeholderText");
@@ -154,8 +163,8 @@
       img.style.display = "none";
       placeholder.style.display = "block";
       alert("Nenhuma imagem encontrada. Tente novamente.");
-      document.getElementById("searchInput").value = "";
-      document.getElementById("searchInput").focus();
+      searchInput.value = defaultText;
+      searchInput.blur(); // tira o foco
     }
   }
 </script>
