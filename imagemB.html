@@ -102,13 +102,13 @@
     <img class="top-img" src="imagemB2.png" alt="Top Picture" />
 
     <form class="search-box" onsubmit="showImage(event)">
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="1. Inserir texto assinalado"
-        required
-      />
-      <button type="submit">2. Ir</button>
+        <input
+          type="text"
+          id="searchInput"
+          value="1. Inserir texto assinalado"
+          required
+        />
+    <button type="submit">2. Ir</button>
     </form>
   </div>
 
@@ -129,7 +129,7 @@
     "c. esterilizado": "https://raw.githubusercontent.com/frade123456/micro/main/dog.jpeg",
   };
 
-  // Sempre limpa o campo quando clicado ou tocado
+  // Apaga o conteúdo (inclusive texto por defeito em value)
   document.getElementById("searchInput").addEventListener("pointerdown", function () {
     this.value = "";
   });
@@ -159,6 +159,7 @@
     }
   }
 </script>
+
 
 
 </body>
