@@ -124,38 +124,40 @@
   </footer>
 
   <script>
-    const imageMap = {
-      "zaragatoa meio trans": "https://raw.githubusercontent.com/frade123456/micro/main/cat.jpg",
-      "c. esterilizado": "https://raw.githubusercontent.com/frade123456/micro/main/dog.jpeg",
-    };
+  const imageMap = {
+    "zaragatoa meio trans": "https://raw.githubusercontent.com/frade123456/micro/main/cat.jpg",
+    "c. esterilizado": "https://raw.githubusercontent.com/frade123456/micro/main/dog.jpeg",
+  };
 
-    function showImage(event) {
-      event.preventDefault();
+  document.getElementById("searchInput").addEventListener("focus", function () {
+    this.value = "";
+  });
 
-      const input = document
-        .getElementById("searchInput")
-        .value.trim()
-        .toLowerCase();
+  function showImage(event) {
+    event.preventDefault();
 
-      const img = document.getElementById("result");
-      const placeholder = document.getElementById("placeholderText");
+    const input = document
+      .getElementById("searchInput")
+      .value.trim()
+      .toLowerCase();
 
-      if (imageMap[input]) {
-        img.src = imageMap[input];
-        img.alt = input;
-        img.style.display = "block";
-        placeholder.style.display = "none";
-      } else {
-        img.style.display = "none";
-        placeholder.style.display = "block";
-        alert("Nenhuma imagem encontrada. Tente novamente.");
-        document.getElementById("searchInput").value = "";
-        document.getElementById("searchInput").focus();
-        document.getElementById("searchInput").addEventListener("focus", function () {
-  this.value = "";
-});
-      }
+    const img = document.getElementById("result");
+    const placeholder = document.getElementById("placeholderText");
+
+    if (imageMap[input]) {
+      img.src = imageMap[input];
+      img.alt = input;
+      img.style.display = "block";
+      placeholder.style.display = "none";
+    } else {
+      img.style.display = "none";
+      placeholder.style.display = "block";
+      alert("Nenhuma imagem encontrada. Tente novamente.");
+      document.getElementById("searchInput").value = "";
+      document.getElementById("searchInput").focus();
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>
