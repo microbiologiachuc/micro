@@ -129,7 +129,8 @@
     "c. esterilizado": "https://raw.githubusercontent.com/frade123456/micro/main/dog.jpeg",
   };
 
-  document.getElementById("searchInput").addEventListener("focus", function () {
+  // Sempre limpa o campo quando clicado ou tocado
+  document.getElementById("searchInput").addEventListener("pointerdown", function () {
     this.value = "";
   });
 
@@ -158,6 +159,7 @@
     }
   }
 </script>
+
 
 </body>
 </html>
