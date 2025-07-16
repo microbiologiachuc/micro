@@ -24,9 +24,7 @@
       align-items: center;
       border-radius: 8px;
       overflow: hidden;
-     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      
-      /* Inicialmente invisível e deslocado para baixo */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       opacity: 0;
       transform: translateY(-30px);
       transition: opacity 0.8s ease-in, transform 0.8s ease-in;
@@ -42,7 +40,30 @@
       max-height: 30vh;
       object-fit: contain;
       display: block;
+      cursor: pointer;
     }
+
+    #iframeContainer {
+      width: 90%;
+      max-width: 600px;
+      height: 80vh;
+      margin-top: 2rem;
+      border: none;
+      display: none;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -54,19 +75,24 @@
     <br>
   </p>
 
-  <!-- Imagem do topo com link (uniformizada) -->
+  <!-- Imagem do topo com link normal -->
   <div class="img-container">
     <a href="https://frade123456.github.io/micro/imagemA.html">
       <img src="imagemA.png" alt="Imagem Topo" />
     </a>
   </div>
 
-  <!-- Imagem de baixo com link -->
-  <div class="img-container">
-    <a href="https://frade123456.github.io/micro/imagemB.html">
-      <img src="imagemB.png" alt="Imagem Inferior" />
-    </a>
+  <!-- Imagem inferior clicável para carregar iframe -->
+  <div class="img-container" id="imgInferior">
+    <img src="imagemB.png" alt="Imagem Inferior" />
   </div>
+
+  <!-- IFRAME dinâmico -->
+  <iframe
+    id="iframeContainer"
+    src=""
+    title="Conteúdo Dinâmico"
+  ></iframe>
 
   <footer style="text-align: center; padding: 20px; color: #555; font-size: 10px;">
     <br><br><br><br>
@@ -75,17 +101,33 @@
     <img src="ulscoimbra_logo.png" alt="Logo" style="margin-top: 0px; max-height: 30px;">
   </footer>
 
-  <!-- Script para animar entrada das imagens -->
   <script>
-  window.addEventListener("load", () => {
-    const containers = document.querySelectorAll('.img-container');
-    containers.forEach((el, i) => {
-      setTimeout(() => {
-        el.classList.add('loaded');
-      }, i * 200); // 0ms para a primeira imagem, 400ms para a segunda
+    window.addEventListener("load", () => {
+      const containers = document.querySelectorAll('.img-container');
+      containers.forEach((el, i) => {
+        setTimeout(() => {
+          el.classList.add('loaded');
+        }, i * 200);
+      });
     });
-  });
-</script>
 
+    // Evento ao clicar na imagem inferior
+    const imagemInferior = document.querySelector('#imgInferior img');
+    const imgInferiorContainer = document.getElementById('imgInferior');
+    const iframe = document.getElementById('iframeContainer');
+
+    imagemInferior.addEventListener('click', () => {
+      // Anima a imagem inferior
+      imgInferiorContainer.style.transition = 'transform 0.8s ease, opacity 0.8s ease';
+      imgInferiorContainer.style.transform = 'translateY(-50px)';
+      imgInferiorContainer.style.opacity = '0.5';
+
+      // Após a animação, mostra o iframe
+      setTimeout(() => {
+        iframe.src = "https://frade123456.github.io/micro/imagemB.html";
+        iframe.style.display = "block";
+      }, 800); // espera a animação terminar
+    });
+  </script>
 </body>
 </html>
