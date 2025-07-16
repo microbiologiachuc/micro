@@ -105,7 +105,6 @@
   const imagemInferior = document.querySelector('#imgInferior img');
   const imgInferiorContainer = document.getElementById('imgInferior');
   const imgTopoContainer = document.getElementById('imgTopo');
-  const iframe = document.getElementById('iframeContainer');
 
   imagemInferior.addEventListener('click', () => {
     // Oculta imagem do topo
@@ -115,24 +114,19 @@
     imgInferiorContainer.style.transition = 'transform 1s ease';
     imgInferiorContainer.style.transform = 'translateY(-200px)';
 
-    // Após a transição da posição, faz fade out
+    // Após mover, aplicar fade out
     setTimeout(() => {
-      imgInferiorContainer.style.transition = 'opacity 1s ease';
+      imgInferiorContainer.style.transition = 'opacity 0.6s ease';
       imgInferiorContainer.style.opacity = '0';
-    }, 1000); // Espera a transição de transform terminar
+    }, 1000);
 
-    // Depois, carrega o iframe e faz fade-in
+    // Após a animação toda, redireciona para a página
     setTimeout(() => {
-      iframe.src = "https://frade123456.github.io/micro/imagemB.html";
-      iframe.style.display = "block";
-      iframe.style.opacity = '0'; // começa invisível
-      requestAnimationFrame(() => {
-        iframe.style.transition = 'opacity 1s ease';
-        iframe.style.opacity = '1'; // fade in
-      });
-    }, 2000); // após a imagem ter desaparecido
+      window.location.href = "https://frade123456.github.io/micro/imagemB.html";
+    }, 1600); // após subida + fade out
   });
 </script>
+
   
 </body>
 </html>
