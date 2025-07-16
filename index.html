@@ -1,134 +1,41 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-  <meta charset="UTF-8" />
-  <title>Duas Imagens Simples</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #fafbfc;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+<script>
+  window.addEventListener("load", () => {
+    const containers = document.querySelectorAll('.img-container');
+    containers.forEach((el, i) => {
+      setTimeout(() => {
+        el.classList.add('loaded');
+      }, i * 200);
+    });
+  });
 
-    .img-container {
-      width: 90%;
-      max-width: 600px;
-      margin-top: 2rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      opacity: 0;
-      transform: translateY(-30px);
-      transition: opacity 0.8s ease-in, transform 0.8s ease-in;
-    }
+  const imagemInferior = document.querySelector('#imgInferior img');
+  const imgInferiorContainer = document.getElementById('imgInferior');
+  const imgTopoContainer = document.getElementById('imgTopo');
+  const iframe = document.getElementById('iframeContainer');
 
-    .img-container.loaded {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  imagemInferior.addEventListener('click', () => {
+    // Oculta imagem do topo
+    imgTopoContainer.style.display = "none";
 
-    .img-container img {
-      max-width: 100%;
-      max-height: 30vh;
-      object-fit: contain;
-      display: block;
-      cursor: pointer;
-    }
+    // Move a imagem inferior para cima
+    imgInferiorContainer.style.transition = 'transform 1s ease';
+    imgInferiorContainer.style.transform = 'translateY(-200px)';
 
-    #iframeContainer {
-      width: 90%;
-      max-width: 600px;
-      height: 80vh;
-      margin-top: 2rem;
-      border: none;
-      opacity: 0;
-      display: none;
-      transition: opacity 1s ease-in;
-    }
-  </style>
-</head>
-<body>
+    // Após a transição da posição, faz fade out
+    setTimeout(() => {
+      imgInferiorContainer.style.transition = 'opacity 1s ease';
+      imgInferiorContainer.style.opacity = '0';
+    }, 1000); // Espera a transição de transform terminar
 
-  <p style="font-size: 1.2em; margin: 1.5rem 0; text-align: center;">
-    Para saber que material de colheita usar,
-    <br>
-    <b>selecione abaixo o tipo de etiqueta:</b>
-    <br>
-  </p>
-
-  <!-- Imagem do topo -->
-  <div class="img-container" id="imgTopo">
-    <a href="https://frade123456.github.io/micro/imagemA.html">
-      <img src="imagemA.png" alt="Imagem Topo" />
-    </a>
-  </div>
-
-  <!-- Imagem inferior clicável -->
-  <div class="img-container" id="imgInferior">
-    <img src="imagemB.png" alt="Imagem Inferior" />
-  </div>
-
-  <!-- IFRAME dinâmico -->
-  <iframe
-    id="iframeContainer"
-    src=""
-    title="Conteúdo Dinâmico"
-  ></iframe>
-
-  <footer style="text-align: center; padding: 20px; color: #555; font-size: 10px;">
-    <br><br><br><br>
-    Sector de Bacteriologia, Laboratório de Microbiologia, <br>
-    <strong>Serviço de Patologia Clínica</strong><br>
-    <img src="ulscoimbra_logo.png" alt="Logo" style="margin-top: 0px; max-height: 30px;">
-  </footer>
-
-  <script>
-    window.addEventListener("load", () => {
-      const containers = document.querySelectorAll('.img-container');
-      containers.forEach((el, i) => {
-        setTimeout(() => {
-          el.classList.add('loaded');
-        }, i * 200);
+    // Depois, carrega o iframe e faz fade-in
+    setTimeout(() => {
+      iframe.src = "https://frade123456.github.io/micro/imagemB.html";
+      iframe.style.display = "block";
+      iframe.style.opacity = '0'; // começa invisível
+      requestAnimationFrame(() => {
+        iframe.style.transition = 'opacity 1s ease';
+        iframe.style.opacity = '1'; // fade in
       });
-    });
-
-    const imagemInferior = document.querySelector('#imgInferior img');
-    const imgInferiorContainer = document.getElementById('imgInferior');
-    const imgTopoContainer = document.getElementById('imgTopo');
-    const iframe = document.getElementById('iframeContainer');
-
-    imagemInferior.addEventListener('click', () => {
-      // Oculta a imagem do topo
-      imgTopoContainer.style.display = "none";
-
-      // Move a imagem inferior para o topo
-      imgInferiorContainer.style.transition = 'transform 1s ease, opacity 1s ease';
-      imgInferiorContainer.style.transform = 'translateY(-200px)';
-      
-      // Depois começa a desvanece-la
-      setTimeout(() => {
-        imgInferiorContainer.style.opacity = '0';
-      }, 1000); // depois da subida
-
-      // Mostra o iframe com fade-in após o fade-out da imagem
-      setTimeout(() => {
-        iframe.src = "https://frade123456.github.io/micro/imagemB.html";
-        iframe.style.display = "block";
-        requestAnimationFrame(() => {
-          iframe.style.opacity = '1';
-        });
-      }, 1800); // depois de imagem desaparecer
-    });
-  </script>
-</body>
-</html>
-
+    }, 2000); // após a imagem ter desaparecido
+  });
+</script>
