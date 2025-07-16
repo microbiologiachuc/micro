@@ -50,19 +50,9 @@
       height: 80vh;
       margin-top: 2rem;
       border: none;
+      opacity: 0;
       display: none;
-      animation: fadeIn 1s ease forwards;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      transition: opacity 1s ease-in;
     }
   </style>
 </head>
@@ -117,20 +107,28 @@
     const iframe = document.getElementById('iframeContainer');
 
     imagemInferior.addEventListener('click', () => {
-      // Oculta a imagem de cima (opcional)
+      // Oculta a imagem do topo
       imgTopoContainer.style.display = "none";
 
-      // Move a imagem de baixo para o topo
-      imgInferiorContainer.style.transition = 'transform 0.8s ease, opacity 0.8s ease';
+      // Move a imagem inferior para o topo
+      imgInferiorContainer.style.transition = 'transform 1s ease, opacity 1s ease';
       imgInferiorContainer.style.transform = 'translateY(-200px)';
-      imgInferiorContainer.style.opacity = '1';
+      
+      // Depois começa a desvanece-la
+      setTimeout(() => {
+        imgInferiorContainer.style.opacity = '0';
+      }, 1000); // depois da subida
 
-      // Após animação, mostra o iframe com a página
+      // Mostra o iframe com fade-in após o fade-out da imagem
       setTimeout(() => {
         iframe.src = "https://frade123456.github.io/micro/imagemB.html";
         iframe.style.display = "block";
-      }, 800);
+        requestAnimationFrame(() => {
+          iframe.style.opacity = '1';
+        });
+      }, 1800); // depois de imagem desaparecer
     });
   </script>
 </body>
 </html>
+
