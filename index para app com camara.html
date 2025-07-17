@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>Centered Regions OCR Camera</title>
+  <title>OCR com Região Centralizada</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -41,7 +41,6 @@
       font-size: 1.2em;
       color: #39f;
       font-weight: bold;
-      text-shadow: none;
     }
     #ocr-region {
       position: absolute;
@@ -56,17 +55,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
     }
     #capture-btn {
       width: 70vw; max-width: 400px;
       margin: 0.5em auto 0 auto; display: block;
-      background: #abdaf5; color: #222;  
+      background: #abdaf5; color: #222;
       border: none; font-size: 1.2em;
       padding: 1em 0.5em; border-radius: 6px;
       font-weight: bold; cursor: pointer;
       box-shadow: 0 3px 8px #0002;
-      transition: background 0.2s;
     }
     #capture-btn:active {
       background: #ffb800;
@@ -76,7 +73,6 @@
       margin-top: 0.5em; color: #ffd600;
       font-weight: bold; font-size: 1.2em;
     }
-    /* Image region ABOVE the button, auto-sizing to image */
     #image-result-region {
       display: flex;
       align-items: center;
@@ -88,7 +84,6 @@
       overflow: hidden;
       width: 95vw;
       height: 65vh;
-      transition: background 0.2s;
     }
     #image-result-region img {
       display: block;
@@ -99,24 +94,6 @@
       background: #fff;
       box-shadow: 0 2px 8px #0001;
     }
-    @media (max-width: 600px) {
-      #camera-container, #video {
-        width: 100vw !important;
-        height: 80vw !important;
-      }
-      #reference-region {
-        width: 40vw !important;
-        height: 8vw !important;
-      }
-      #ocr-region {
-        width: 50vw !important;
-        height: 5vw !important;
-      }
-      #image-result-region {
-        max-width: 95vw !important;
-        max-height: 70vw !important;
-      }
-    }
   </style>
 </head>
 <body>
@@ -126,42 +103,40 @@
     <div id="ocr-region"></div>
   </div>
   <div id="image-result-region"></div>
-  
   <button id="capture-btn">TESTE 4</button>
-  
   <div id="loading">A verificar…</div>
   <canvas id="canvas" style="display:none;"></canvas>
+
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <script>
-    // Map recognized text (lowercase) to image URLs
+    const video = document.getElementById('video');
+
+    function startCamera() {
+      const constraints = {
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false
+      };
+
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => video.srcObject = stream)
+        .catch(() => {
+          alert('A câmara não pôde ser iniciada. Tenta num navegador com permissões ou HTTPS.');
+        });
+    }
+    startCamera();
+
     const textToImageMap = {
       "c.esterilizado": "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg",
       "banana": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg",
       "orange": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Orange-Fruit-Pieces.jpg"
-      // Add more mappings as needed!
     };
 
-    // Camera setup
-    const video = document.getElementById('video');
-    function startCamera() {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-          .then(stream => video.srcObject = stream)
-          .catch(() => alert('Camera access denied or not available.'));
-      } else {
-        alert('getUserMedia is not supported in this browser.');
-      }
-    }
-    startCamera();
-
-    // Capture and OCR (with numbers blacklisted)
-    document.getElementById('capture-btn').onclick = async function() {
+    document.getElementById('capture-btn').onclick = async function () {
       const loading = document.getElementById('loading');
       loading.style.display = 'block';
       document.getElementById('ocr-region').innerHTML = '';
       document.getElementById('image-result-region').innerHTML = '';
 
-      // Calculate OCR region in video coordinates
       const videoRect = video.getBoundingClientRect();
       const ocrRect = document.getElementById('ocr-region').getBoundingClientRect();
 
@@ -170,7 +145,6 @@
       const sw = ocrRect.width;
       const sh = ocrRect.height;
 
-      // Scale to video resolution
       const scaleX = video.videoWidth / videoRect.width;
       const scaleY = video.videoHeight / videoRect.height;
 
@@ -180,27 +154,24 @@
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Crop region
       const cropped = ctx.getImageData(
         sx * scaleX, sy * scaleY, sw * scaleX, sh * scaleY
       );
-      // Put cropped to temp canvas
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = cropped.width;
       tempCanvas.height = cropped.height;
       tempCanvas.getContext('2d').putImageData(cropped, 0, 0);
 
-      // OCR with numbers blacklisted
       try {
         const { data: { text } } = await Tesseract.recognize(
           tempCanvas,
           'por',
           {
             logger: m => console.log(m),
-            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE
+            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
             params: {
-      tessedit_char_blacklist: '0123456789#$%',
-      tessedit_char_whitelist: 'abcdefghijklmnopqrstuvwxyzçABCDEFGHIJKLMNOPQRSTUVWXYZÇ'
+              tessedit_char_blacklist: '0123456789#$%',
+              tessedit_char_whitelist: 'abcdefghijklmnopqrstuvwxyzçABCDEFGHIJKLMNOPQRSTUVWXYZÇ'
             }
           }
         );
@@ -208,22 +179,22 @@
         const recognized = text.trim().toLowerCase();
         const imgUrl = textToImageMap[recognized];
         const imageRegion = document.getElementById('image-result-region');
+
         if (imgUrl) {
-          // Dynamically size region to image
           const img = new window.Image();
           img.src = imgUrl;
           img.alt = recognized;
-          img.onload = function() {
+          img.onload = function () {
             imageRegion.innerHTML = '';
             imageRegion.appendChild(img);
           };
         } else {
-          imageRegion.innerHTML = `<div style="text-align:center; color:black; font-weight:bold;">Sem correspondência para: "${recognized || '[empty]'}".<br>Tente novamente.</div>`;
+          imageRegion.innerHTML = `<div style="text-align:center; color:black; font-weight:bold;">Sem correspondência para: "${recognized || '[vazio]'}".<br>Tente novamente.</div>`;
         }
       } catch (e) {
         loading.style.display = 'none';
         document.getElementById('image-result-region').innerHTML =
-          '<span style="color:#c00;">OCR failed: ' + e.message + '</span>';
+          '<span style="color:#c00;">OCR falhou: ' + e.message + '</span>';
       }
     };
   </script>
