@@ -6,57 +6,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      margin: 0; padding: 0; font-family: Calibri, sans-serif; background: #fff;
-      user-select: none;
+      margin: 0; padding: 0;
+      font-family: Calibri, sans-serif;
+      background: #fff;
     }
-    #button-bar {
-      display: flex;
-      justify-content: center;
-      gap: 1em;
-      margin: 1em 0;
-    }
-    button {
-      padding: 1em 2em;
-      background: #39f;
-      color: white;
-      font-size: 1.1em;
-      font-weight: bold;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    #zoom-wrapper {
-      width: 100vw;
-      height: 60vh;
-      overflow: hidden;
+    #container {
       position: relative;
+      width: 100vw;
+      height: 80vh;
       background: #eee;
-      touch-action: none;
-      border: 1px solid #ccc;
-      margin: 0 auto;
-      max-width: 600px;
+      overflow: hidden;
+      user-select: none; /* evita seleção durante arrasto */
     }
-
-    #image-container {
+    #image-wrapper {
       position: absolute;
-      left: 0;
-      top: 0;
-      transform-origin: 0 0;
-      will-change: transform;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow: hidden;
+      touch-action: none; /* para manipular gestos */
       cursor: grab;
     }
-    #image-container:active {
-      cursor: grabbing;
-    }
-
     #preview {
-      display: block;
-      max-width: none; /* no scaling by css, scale done by transform */
+      position: absolute;
+      top: 0; left: 0;
+      transform-origin: 0 0; /* para o zoom partir do canto superior esquerdo */
       user-select: none;
       -webkit-user-drag: none;
+      max-width: none; /* deixar o tamanho original para zoom */
     }
-
     #ocr-region {
       position: absolute;
       width: 60vw;
@@ -69,10 +45,7 @@
       z-index: 10;
       cursor: move;
       touch-action: none;
-      user-select: none;
-      box-sizing: border-box;
     }
-
     .resize-handle {
       width: 16px;
       height: 16px;
@@ -83,30 +56,45 @@
       cursor: se-resize;
       border-radius: 50%;
       border: 2px solid #000;
-      z-index: 11;
+      z-index: 20;
     }
-
+    #button-bar {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      margin-top: 1em;
+    }
+    #button-bar button {
+      padding: 1em 2em;
+      background: #39f;
+      color: white;
+      font-size: 1.1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
     #result {
-      max-width: 600px;
       margin: 1em auto;
       text-align: center;
       font-size: 1.1em;
       font-weight: bold;
-      min-height: 2em;
+      max-width: 90vw;
+      word-wrap: break-word;
     }
   </style>
 </head>
 <body>
 
-  <input type="file" accept="image/*" capture="environment" id="camera-input" style="display:none" />
-
+  <input type="file" accept="image/*" capture="environment" id="camera-input" style="display: none;" />
+  
   <div id="button-bar">
     <button id="capture-btn">Tirar Foto</button>
     <button id="ocr-btn" disabled>Ler Texto</button>
   </div>
 
-  <div id="zoom-wrapper">
-    <div id="image-container">
+  <div id="container">
+    <div id="image-wrapper">
       <img id="preview" src="" alt="Pré-visualização" />
     </div>
     <div id="ocr-region">
@@ -116,25 +104,28 @@
 
   <div id="result">Resultado aparecerá aqui…</div>
 
-  <canvas id="canvas" style="display:none"></canvas>
+  <canvas id="canvas" style="display:none;"></canvas>
 
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <script>
     const input = document.getElementById('camera-input');
     const preview = document.getElementById('preview');
-    const resultDiv = document.getElementById('result');
     const ocrRegion = document.getElementById('ocr-region');
-    const handle = ocrRegion.querySelector('.resize-handle');
     const ocrBtn = document.getElementById('ocr-btn');
-    const imageContainer = document.getElementById('image-container');
-    const zoomWrapper = document.getElementById('zoom-wrapper');
+    const resultDiv = document.getElementById('result');
+    const imageWrapper = document.getElementById('image-wrapper');
+    const handle = ocrRegion.querySelector('.resize-handle');
 
-    let scale = 1, minScale = 0.5, maxScale = 5;
-    let panX = 0, panY = 0;
-    let isPanning = false, panStart = { x: 0, y: 0 };
+    // Variáveis para zoom e pan da imagem
+    let scale = 1;
+    let originX = 0;
+    let originY = 0;
+    let isPanning = false;
+    let startPanX, startPanY;
 
-    // === Botões ===
+    // Tirar foto
     document.getElementById('capture-btn').addEventListener('click', () => {
+      input.value = null;
       input.click();
     });
 
@@ -146,209 +137,211 @@
       img.src = URL.createObjectURL(file);
       img.onload = function () {
         preview.src = img.src;
+        preview.style.width = img.width + 'px';
+        preview.style.height = img.height + 'px';
 
-        // Reset zoom and pan
-        scale = 1; panX = 0; panY = 0;
+        // Reset zoom/pan
+        scale = 1;
+        originX = 0;
+        originY = 0;
         updateTransform();
 
-        // Reset OCR region to center
-        ocrRegion.style.width = '60vw';
-        ocrRegion.style.height = '10vw';
-        ocrRegion.style.left = '50%';
-        ocrRegion.style.top = '40%';
-        ocrRegion.style.transform = 'translate(-50%, -50%)';
+        // Posicionar imagem no centro
+        originX = (imageWrapper.clientWidth - img.width) / 2;
+        originY = (imageWrapper.clientHeight - img.height) / 2;
+        updateTransform();
 
+        // Ativa botão OCR e reset resultado
         ocrBtn.disabled = false;
-        resultDiv.textContent = 'Ajuste a área OCR e depois clique em "Ler Texto".';
+        resultDiv.textContent = 'Ajuste a imagem e a área OCR, depois clique em "Ler Texto".';
       };
     });
 
-    // === Zoom e Pan imagem ===
+    // Função para atualizar transform da imagem
     function updateTransform() {
-      imageContainer.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+      preview.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
     }
 
-    zoomWrapper.addEventListener('wheel', e => {
+    // Pan da imagem
+    imageWrapper.addEventListener('mousedown', (e) => {
+      if (e.target === ocrRegion || ocrRegion.contains(e.target)) return; // não pan no ocr-region
       e.preventDefault();
-      // Zoom centrado no ponteiro
-      const rect = zoomWrapper.getBoundingClientRect();
-      const offsetX = e.clientX - rect.left - panX;
-      const offsetY = e.clientY - rect.top - panY;
-      const wheelDelta = e.deltaY < 0 ? 1.1 : 0.9;
-      const newScale = Math.min(maxScale, Math.max(minScale, scale * wheelDelta));
-      if (newScale !== scale) {
-        // Ajustar pan para manter o foco no ponteiro
-        panX -= offsetX * (newScale / scale - 1);
-        panY -= offsetY * (newScale / scale - 1);
-        scale = newScale;
-        updateTransform();
-      }
-    }, { passive: false });
-
-    zoomWrapper.addEventListener('pointerdown', e => {
-      if (e.target === ocrRegion || ocrRegion.contains(e.target)) return; // não pan se tocar na região OCR
       isPanning = true;
-      panStart.x = e.clientX - panX;
-      panStart.y = e.clientY - panY;
-      zoomWrapper.setPointerCapture(e.pointerId);
+      startPanX = e.clientX - originX;
+      startPanY = e.clientY - originY;
+      imageWrapper.style.cursor = 'grabbing';
     });
-
-    zoomWrapper.addEventListener('pointermove', e => {
+    window.addEventListener('mousemove', (e) => {
       if (!isPanning) return;
-      panX = e.clientX - panStart.x;
-      panY = e.clientY - panStart.y;
+      originX = e.clientX - startPanX;
+      originY = e.clientY - startPanY;
       updateTransform();
     });
-
-    zoomWrapper.addEventListener('pointerup', e => {
+    window.addEventListener('mouseup', () => {
       isPanning = false;
-      zoomWrapper.releasePointerCapture(e.pointerId);
+      imageWrapper.style.cursor = 'grab';
     });
 
-    zoomWrapper.addEventListener('pointercancel', e => {
-      isPanning = false;
-      zoomWrapper.releasePointerCapture(e.pointerId);
-    });
+    // Zoom da imagem via roda do mouse (CTRL + roda para evitar scroll normal)
+    imageWrapper.addEventListener('wheel', (e) => {
+      e.preventDefault();
 
-    // === Drag da região OCR ===
+      // Ajusta zoom ao redor do ponto do mouse
+      const rect = preview.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const delta = e.deltaY < 0 ? 1.1 : 0.9;
+      const newScale = Math.min(Math.max(scale * delta, 0.2), 5);
+
+      // Corrige posição para zoom no ponto do mouse
+      originX = e.clientX - ((mouseX / scale) * newScale);
+      originY = e.clientY - ((mouseY / scale) * newScale);
+
+      scale = newScale;
+      updateTransform();
+    }, { passive: false });
+
+    // Drag da região OCR
     let isDragging = false, offsetX = 0, offsetY = 0;
-    ocrRegion.addEventListener('pointerdown', startDrag);
+    ocrRegion.addEventListener('mousedown', startDrag);
+    ocrRegion.addEventListener('touchstart', startDrag, { passive: false });
 
     function startDrag(e) {
-      if (e.target === handle) return; // evita conflito com resize
+      if (e.target === handle) return;
+      e.preventDefault();
       isDragging = true;
       const rect = ocrRegion.getBoundingClientRect();
-      offsetX = e.clientX - rect.left;
-      offsetY = e.clientY - rect.top;
-      ocrRegion.setPointerCapture(e.pointerId);
-      e.preventDefault();
+      offsetX = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      offsetY = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+      document.addEventListener('mousemove', onDrag);
+      document.addEventListener('mouseup', stopDrag);
+      document.addEventListener('touchmove', onDrag, { passive: false });
+      document.addEventListener('touchend', stopDrag);
     }
-    ocrRegion.addEventListener('pointermove', e => {
-      if (!isDragging) return;
-      const parentRect = zoomWrapper.getBoundingClientRect();
-      let x = e.clientX - offsetX - parentRect.left;
-      let y = e.clientY - offsetY - parentRect.top;
 
-      // Limitar posição dentro do wrapper
-      x = Math.max(0, Math.min(x, parentRect.width - ocrRegion.offsetWidth));
-      y = Math.max(0, Math.min(y, parentRect.height - ocrRegion.offsetHeight));
+    function onDrag(e) {
+      if (!isDragging) return;
+      e.preventDefault();
+      const container = document.getElementById('container');
+      const containerRect = container.getBoundingClientRect();
+      let x = (e.touches ? e.touches[0].clientX : e.clientX) - offsetX - containerRect.left;
+      let y = (e.touches ? e.touches[0].clientY : e.clientY) - offsetY - containerRect.top;
+
+      // Limitar para não sair do container
+      x = Math.min(containerRect.width - ocrRegion.offsetWidth, Math.max(0, x));
+      y = Math.min(containerRect.height - ocrRegion.offsetHeight, Math.max(0, y));
 
       ocrRegion.style.left = x + 'px';
       ocrRegion.style.top = y + 'px';
       ocrRegion.style.transform = 'none';
-    });
-    ocrRegion.addEventListener('pointerup', e => {
-      isDragging = false;
-      ocrRegion.releasePointerCapture(e.pointerId);
-    });
-    ocrRegion.addEventListener('pointercancel', e => {
-      isDragging = false;
-      ocrRegion.releasePointerCapture(e.pointerId);
-    });
+    }
 
-    // === Resize da região OCR ===
+    function stopDrag() {
+      isDragging = false;
+      document.removeEventListener('mousemove', onDrag);
+      document.removeEventListener('mouseup', stopDrag);
+      document.removeEventListener('touchmove', onDrag);
+      document.removeEventListener('touchend', stopDrag);
+    }
+
+    // Resize da região OCR
     let isResizing = false, startX, startY, startW, startH;
-    handle.addEventListener('pointerdown', startResize);
+    handle.addEventListener('mousedown', startResize);
+    handle.addEventListener('touchstart', startResize, { passive: false });
 
     function startResize(e) {
+      e.preventDefault();
       isResizing = true;
       const rect = ocrRegion.getBoundingClientRect();
-      startX = e.clientX;
-      startY = e.clientY;
+      startX = e.touches ? e.touches[0].clientX : e.clientX;
+      startY = e.touches ? e.touches[0].clientY : e.clientY;
       startW = rect.width;
       startH = rect.height;
-      handle.setPointerCapture(e.pointerId);
-      e.preventDefault();
+      document.addEventListener('mousemove', onResize);
+      document.addEventListener('mouseup', stopResize);
+      document.addEventListener('touchmove', onResize, { passive: false });
+      document.addEventListener('touchend', stopResize);
     }
-    handle.addEventListener('pointermove', e => {
+
+    function onResize(e) {
       if (!isResizing) return;
-      let dx = e.clientX - startX;
-      let dy = e.clientY - startY;
-      const newW = Math.max(30, startW + dx);
-      const newH = Math.max(20, startH + dy);
-      ocrRegion.style.width = newW + 'px';
-      ocrRegion.style.height = newH + 'px';
-    });
-    handle.addEventListener('pointerup', e => {
-      isResizing = false;
-      handle.releasePointerCapture(e.pointerId);
-    });
-    handle.addEventListener('pointercancel', e => {
-      isResizing = false;
-      handle.releasePointerCapture(e.pointerId);
-    });
+      e.preventDefault();
+      const dx = (e.touches ? e.touches[0].clientX : e.clientX) - startX;
+      const dy = (e.touches ? e.touches[0].clientY : e.clientY) - startY;
+      ocrRegion.style.width = Math.max(30, startW + dx) + 'px';
+      ocrRegion.style.height = Math.max(20, startH + dy) + 'px';
+    }
 
-    // === OCR ===
+    function stopResize() {
+      isResizing = false;
+      document.removeEventListener('mousemove', onResize);
+      document.removeEventListener('mouseup', stopResize);
+      document.removeEventListener('touchmove', onResize);
+      document.removeEventListener('touchend', stopResize);
+    }
+
+    // Função OCR no botão
     ocrBtn.addEventListener('click', async () => {
-      if (!preview.src) return;
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = preview;
-
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
-
-      // bounding boxes
-      const imgRect = preview.getBoundingClientRect();
-      const ocrRect = ocrRegion.getBoundingClientRect();
-      const wrapperRect = zoomWrapper.getBoundingClientRect();
-
-      // coordenadas OCR relativo à imagem *original* (não transformada)
-      // Ajustar por zoom/pan e escala da imagem
-      const xOnImg = ocrRect.left - imgRect.left;
-      const yOnImg = ocrRect.top - imgRect.top;
-
-      // Tamanho real da imagem exibida no preview (sem zoom)  
-      // (considerando que preview pode ter css diferente, pegamos relação naturalWidth/naturalHeight)
-      const displayedWidth = imgRect.width;
-      const displayedHeight = imgRect.height;
-
-      // Coordenadas da região OCR relativas à imagem natural
-      const scaleX = img.naturalWidth / displayedWidth;
-      const scaleY = img.naturalHeight / displayedHeight;
-
-      const x = xOnImg * scaleX;
-      const y = yOnImg * scaleY;
-      const w = ocrRect.width * scaleX;
-      const h = ocrRect.height * scaleY;
-
-      // Confirma limites da área para evitar erro no getImageData
-      const cropX = Math.max(0, Math.min(canvas.width, x));
-      const cropY = Math.max(0, Math.min(canvas.height, y));
-      const cropW = Math.min(canvas.width - cropX, w);
-      const cropH = Math.min(canvas.height - cropY, h);
-
-      if (cropW <= 0 || cropH <= 0) {
-        resultDiv.textContent = 'Área OCR inválida.';
+      if (!preview.src) {
+        alert('Tire uma foto primeiro!');
         return;
       }
 
-      const imageData = ctx.getImageData(cropX, cropY, cropW, cropH);
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = cropW;
-      tempCanvas.height = cropH;
-      tempCanvas.getContext('2d').putImageData(imageData, 0, 0);
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
 
-      resultDiv.textContent = 'A processar…';
+      // Ajustar canvas para a imagem original
+      const img = preview;
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Desenhar a imagem original (sem zoom/pan)
+      ctx.drawImage(img, 0, 0);
+
+      // Pega as posições da região OCR relativas ao container
+      const containerRect = document.getElementById('container').getBoundingClientRect();
+      const regionRect = ocrRegion.getBoundingClientRect();
+
+      // Como o preview está com zoom/pan, convertemos posição da região para coordenadas da imagem original:
+      // Passo 1: posição da região relativa ao container
+      let relativeLeft = regionRect.left - containerRect.left;
+      let relativeTop = regionRect.top - containerRect.top;
+
+      // Passo 2: como a imagem está com zoom e translação, precisamos "desfazer" isso para obter posição correta na imagem original:
+      // Como preview está transformado: translate(originX, originY) scale(scale)
+      // Para obter a coordenada correta na imagem natural, ajustamos:
+      // Coords na imagem natural = (pos - translate) / scale
+
+      const x = (relativeLeft - originX) / scale;
+      const y = (relativeTop - originY) / scale;
+      const w = ocrRegion.offsetWidth / scale;
+      const h = ocrRegion.offsetHeight / scale;
+
+      // Pegando a imagem da região
       try {
+        const imageData = ctx.getImageData(x, y, w, h);
+
+        // Criar canvas temporário só com a região OCR
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = w;
+        tempCanvas.height = h;
+        tempCanvas.getContext('2d').putImageData(imageData, 0, 0);
+
+        resultDiv.textContent = 'A processar...';
+
         const { data: { text } } = await Tesseract.recognize(
           tempCanvas,
           'por',
           {
-            logger: m => {
-              //console.log(m);
-              if (m.status === 'recognizing text') {
-                resultDiv.textContent = 'Processando OCR… ' + (m.progress * 100).toFixed(0) + '%';
-              }
-            }
+            logger: m => console.log(m),
+            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE
           }
         );
         resultDiv.textContent = 'Resultado: "' + text.trim() + '"';
-      } catch (err) {
-        resultDiv.textContent = 'Erro no OCR: ' + err.message;
+      } catch (error) {
+        resultDiv.textContent = 'Erro no OCR: ' + error.message;
       }
     });
   </script>
