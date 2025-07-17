@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>OCR com Câmara Nativa</title>
+  <title>OCR com Ajuste Pós-Foto</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -55,7 +55,7 @@
       object-fit: contain;
     }
 
-    #capture-btn {
+    button {
       display: block;
       margin: 1em auto 0 auto;
       padding: 1em 2em;
@@ -78,11 +78,12 @@
 </head>
 <body>
 
-  <!-- Botão que ativa a câmara -->
+  <!-- Botões -->
   <input type="file" accept="image/*" capture="environment" id="camera-input" style="display: none;">
   <button id="capture-btn">Tirar Foto</button>
+  <button id="ocr-btn" style="display: none;">Ler Texto</button>
 
-  <!-- Região de OCR e Imagem -->
+  <!-- Área da imagem com região OCR -->
   <div id="container">
     <img id="preview" src="" alt="Pré-visualização">
     <div id="ocr-region">
@@ -101,6 +102,7 @@
     const resultDiv = document.getElementById('result');
     const ocrRegion = document.getElementById('ocr-region');
     const handle = ocrRegion.querySelector('.resize-handle');
+    const ocrBtn = document.getElementById('ocr-btn');
 
     document.getElementById('capture-btn').addEventListener('click', () => {
       input.click();
@@ -112,61 +114,65 @@
 
       const img = new Image();
       img.src = URL.createObjectURL(file);
-      img.onload = async function () {
+      img.onload = function () {
         preview.src = img.src;
-
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-
-        const containerRect = document.getElementById('container').getBoundingClientRect();
-        const regionRect = ocrRegion.getBoundingClientRect();
-
-        // Calcular posição proporcional da região OCR na imagem
-        const xRatio = img.width / containerRect.width;
-        const yRatio = img.height / containerRect.height;
-
-        const region = {
-          x: (regionRect.left - containerRect.left) * xRatio,
-          y: (regionRect.top - containerRect.top) * yRatio,
-          w: regionRect.width * xRatio,
-          h: regionRect.height * yRatio
-        };
-
-        const cropped = ctx.getImageData(region.x, region.y, region.w, region.h);
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = region.w;
-        tempCanvas.height = region.h;
-        tempCanvas.getContext('2d').putImageData(cropped, 0, 0);
-
-        resultDiv.textContent = 'A processar…';
-
-        try {
-          const { data: { text } } = await Tesseract.recognize(
-            tempCanvas,
-            'por',
-            {
-              logger: m => console.log(m),
-              tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE
-            }
-          );
-          resultDiv.textContent = 'Resultado: "' + text.trim() + '"';
-        } catch (err) {
-          resultDiv.textContent = 'Erro no OCR: ' + err.message;
-        }
+        ocrBtn.style.display = 'block';
+        resultDiv.textContent = 'Ajuste a área OCR e depois clique em "Ler Texto".';
       };
     });
 
-    // Drag para mover
-    let isDragging = false, offsetX = 0, offsetY = 0;
+    ocrBtn.addEventListener('click', async function () {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = preview;
 
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      ctx.drawImage(img, 0, 0);
+
+      const containerRect = document.getElementById('container').getBoundingClientRect();
+      const regionRect = ocrRegion.getBoundingClientRect();
+
+      const xRatio = img.naturalWidth / containerRect.width;
+      const yRatio = img.naturalHeight / containerRect.height;
+
+      const region = {
+        x: (regionRect.left - containerRect.left) * xRatio,
+        y: (regionRect.top - containerRect.top) * yRatio,
+        w: regionRect.width * xRatio,
+        h: regionRect.height * yRatio
+      };
+
+      const cropped = ctx.getImageData(region.x, region.y, region.w, region.h);
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = region.w;
+      tempCanvas.height = region.h;
+      tempCanvas.getContext('2d').putImageData(cropped, 0, 0);
+
+      resultDiv.textContent = 'A processar…';
+
+      try {
+        const { data: { text } } = await Tesseract.recognize(
+          tempCanvas,
+          'por',
+          {
+            logger: m => console.log(m),
+            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE
+          }
+        );
+        resultDiv.textContent = 'Resultado: "' + text.trim() + '"';
+      } catch (err) {
+        resultDiv.textContent = 'Erro no OCR: ' + err.message;
+      }
+    });
+
+    // Drag da região
+    let isDragging = false, offsetX = 0, offsetY = 0;
     ocrRegion.addEventListener('mousedown', startDrag);
     ocrRegion.addEventListener('touchstart', startDrag, { passive: false });
 
     function startDrag(e) {
-      if (e.target === handle) return; // ignora resize
+      if (e.target === handle) return;
       isDragging = true;
       const rect = ocrRegion.getBoundingClientRect();
       offsetX = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
@@ -199,7 +205,6 @@
 
     // Resize da região
     let isResizing = false, startX, startY, startW, startH;
-
     handle.addEventListener('mousedown', startResize);
     handle.addEventListener('touchstart', startResize, { passive: false });
 
