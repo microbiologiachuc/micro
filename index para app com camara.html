@@ -2,22 +2,53 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>OCR com Ajuste Pós-Foto</title>
+  <title>OCR com Zoom por Gestos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
-      padding: 0;
       font-family: Calibri, sans-serif;
       background: #fff;
     }
 
-    #container {
-      position: relative;
-      width: 100vw;
-      height: 40vh;
-      background: #eee;
+    #button-bar {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      margin-top: 1em;
+    }
+
+    #button-bar button {
+      padding: 1em 2em;
+      background: #39f;
+      color: white;
+      font-size: 1.1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #zoom-wrapper {
+      width: 100%;
+      height: 60vh;
       overflow: hidden;
+      position: relative;
+      background: #eee;
+      touch-action: none;
+    }
+
+    #image-container {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform-origin: 0 0;
+    }
+
+    #preview {
+      max-width: 100%;
+      height: auto;
+      display: block;
     }
 
     #ocr-region {
@@ -47,27 +78,6 @@
       z-index: 3;
     }
 
-    #preview {
-      max-width: 100%;
-      max-height: 40vh;
-      display: block;
-      margin: auto;
-      object-fit: contain;
-    }
-
-    button {
-      display: block;
-      margin: 1em auto 0 auto;
-      padding: 1em 2em;
-      background: #39f;
-      color: white;
-      font-size: 1.1em;
-      font-weight: bold;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
     #result {
       margin: 1em auto;
       text-align: center;
@@ -75,40 +85,31 @@
       font-weight: bold;
     }
 
-      #button-bar {
-        display: flex;
-        justify-content: center;
-        gap: 1em;
-        margin-top: 1em;
-      }
-      
-      #button-bar button {
-        margin: 0; /* remove margem vertical para alinhar horizontalmente */
-      }
-    
+    canvas {
+      display: none;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Botões -->
   <input type="file" accept="image/*" capture="environment" id="camera-input" style="display: none;">
   
   <div id="button-bar">
-  <button id="capture-btn">Tirar Foto</button>
-  <button id="ocr-btn">Ler Texto</button>
-</div>
+    <button id="capture-btn">Tirar Foto</button>
+    <button id="ocr-btn">Ler Texto</button>
+  </div>
 
-  <!-- Área da imagem com região OCR -->
-  <div id="container">
-    <img id="preview" src="" alt="Pré-visualização">
-    <div id="ocr-region">
-      <div class="resize-handle"></div>
+  <div id="zoom-wrapper">
+    <div id="image-container">
+      <img id="preview" src="" alt="Pré-visualização">
+      <div id="ocr-region">
+        <div class="resize-handle"></div>
+      </div>
     </div>
   </div>
 
   <div id="result">Resultado aparecerá aqui…</div>
-
-  <canvas id="canvas" style="display: none;"></canvas>
+  <canvas id="canvas"></canvas>
 
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <script>
@@ -118,10 +119,9 @@
     const ocrRegion = document.getElementById('ocr-region');
     const handle = ocrRegion.querySelector('.resize-handle');
     const ocrBtn = document.getElementById('ocr-btn');
+    const imageContainer = document.getElementById('image-container');
 
-    document.getElementById('capture-btn').addEventListener('click', () => {
-      input.click();
-    });
+    document.getElementById('capture-btn').addEventListener('click', () => input.click());
 
     input.addEventListener('change', function () {
       const file = this.files[0];
@@ -131,8 +131,8 @@
       img.src = URL.createObjectURL(file);
       img.onload = function () {
         preview.src = img.src;
-        ocrBtn.style.display = 'block';
         resultDiv.textContent = 'Ajuste a área OCR e depois clique em "Ler Texto".';
+        resetTransform();
       };
     });
 
@@ -145,23 +145,21 @@
       canvas.height = img.naturalHeight;
       ctx.drawImage(img, 0, 0);
 
-      const containerRect = document.getElementById('container').getBoundingClientRect();
-      const regionRect = ocrRegion.getBoundingClientRect();
+      const imgRect = preview.getBoundingClientRect();
+      const ocrRect = ocrRegion.getBoundingClientRect();
 
-      const xRatio = img.naturalWidth / containerRect.width;
-      const yRatio = img.naturalHeight / containerRect.height;
+      const xRatio = img.naturalWidth / (imgRect.width * scale);
+      const yRatio = img.naturalHeight / (imgRect.height * scale);
 
-      const region = {
-        x: (regionRect.left - containerRect.left) * xRatio,
-        y: (regionRect.top - containerRect.top) * yRatio,
-        w: regionRect.width * xRatio,
-        h: regionRect.height * yRatio
-      };
+      const x = (ocrRect.left - imgRect.left - originX) / scale * xRatio;
+      const y = (ocrRect.top - imgRect.top - originY) / scale * yRatio;
+      const w = ocrRect.width / scale * xRatio;
+      const h = ocrRect.height / scale * yRatio;
 
-      const cropped = ctx.getImageData(region.x, region.y, region.w, region.h);
+      const cropped = ctx.getImageData(x, y, w, h);
       const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = region.w;
-      tempCanvas.height = region.h;
+      tempCanvas.width = w;
+      tempCanvas.height = h;
       tempCanvas.getContext('2d').putImageData(cropped, 0, 0);
 
       resultDiv.textContent = 'A processar…';
@@ -170,10 +168,7 @@
         const { data: { text } } = await Tesseract.recognize(
           tempCanvas,
           'por',
-          {
-            logger: m => console.log(m),
-            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE
-          }
+          { logger: m => console.log(m), tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE }
         );
         resultDiv.textContent = 'Resultado: "' + text.trim() + '"';
       } catch (err) {
@@ -201,10 +196,9 @@
     function onDrag(e) {
       if (!isDragging) return;
       e.preventDefault();
-      const container = document.getElementById('container');
-      const containerRect = container.getBoundingClientRect();
-      const x = (e.touches ? e.touches[0].clientX : e.clientX) - offsetX - containerRect.left;
-      const y = (e.touches ? e.touches[0].clientY : e.clientY) - offsetY - containerRect.top;
+      const container = document.getElementById('zoom-wrapper').getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - offsetX - container.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - offsetY - container.top;
       ocrRegion.style.left = `${x}px`;
       ocrRegion.style.top = `${y}px`;
       ocrRegion.style.transform = 'none';
@@ -218,7 +212,7 @@
       document.removeEventListener('touchend', stopDrag);
     }
 
-    // Resize da região
+    // Resize
     let isResizing = false, startX, startY, startW, startH;
     handle.addEventListener('mousedown', startResize);
     handle.addEventListener('touchstart', startResize, { passive: false });
@@ -251,6 +245,68 @@
       document.removeEventListener('mouseup', stopResize);
       document.removeEventListener('touchmove', onResize);
       document.removeEventListener('touchend', stopResize);
+    }
+
+    // Zoom & Pan por gestos
+    let scale = 1;
+    let originX = 0, originY = 0;
+    let lastX = 0, lastY = 0;
+    let startDist = 0, startScale = 1;
+    let isPanning = false;
+
+    const wrapper = document.getElementById('zoom-wrapper');
+
+    function applyTransform() {
+      imageContainer.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+    }
+
+    function resetTransform() {
+      scale = 1;
+      originX = 0;
+      originY = 0;
+      applyTransform();
+    }
+
+    wrapper.addEventListener('touchstart', e => {
+      if (e.touches.length === 1) {
+        isPanning = true;
+        lastX = e.touches[0].clientX;
+        lastY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        isPanning = false;
+        startDist = getDistance(e.touches[0], e.touches[1]);
+        startScale = scale;
+      }
+    }, { passive: false });
+
+    wrapper.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (e.touches.length === 1 && isPanning) {
+        const dx = e.touches[0].clientX - lastX;
+        const dy = e.touches[0].clientY - lastY;
+        originX += dx;
+        originY += dy;
+        lastX = e.touches[0].clientX;
+        lastY = e.touches[0].clientY;
+        applyTransform();
+      } else if (e.touches.length === 2) {
+        const newDist = getDistance(e.touches[0], e.touches[1]);
+        const pinchScale = newDist / startDist;
+        scale = Math.min(5, Math.max(0.5, startScale * pinchScale));
+        applyTransform();
+      }
+    }, { passive: false });
+
+    wrapper.addEventListener('touchend', e => {
+      if (e.touches.length < 2) {
+        isPanning = false;
+      }
+    }, { passive: false });
+
+    function getDistance(t1, t2) {
+      const dx = t2.clientX - t1.clientX;
+      const dy = t2.clientY - t1.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
     }
   </script>
 </body>
