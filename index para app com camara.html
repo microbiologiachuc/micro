@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8" />
-  <title>OCR com Região Fixa</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>OCR em Português</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
       font-family: Calibri, sans-serif;
       background: #fff;
+      text-align: center;
     }
 
     #container {
@@ -17,21 +18,13 @@
       height: 80vh;
       background: #eee;
       overflow: hidden;
-      touch-action: none;
-    }
-
-    #image-wrapper {
-      position: absolute;
-      top: 0;
-      left: 0;
-      transform-origin: 0 0;
     }
 
     #preview {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
       display: block;
-      max-width: none;
-      width: 100%;
-      height: auto;
     }
 
     #ocr-region {
@@ -39,26 +32,26 @@
       width: 70vw;
       height: 7vw;
       left: 50%;
-      top: 40%;
+      top: 50%;
       transform: translate(-50%, -50%);
       border: 2px dashed #ffb800;
       background: rgba(255, 255, 0, 0.1);
-      z-index: 10;
       pointer-events: none;
+      z-index: 10;
     }
 
     #button-bar {
       display: flex;
       justify-content: center;
       gap: 1em;
-      margin: 1em auto;
+      margin: 1em 0;
     }
 
     button {
       padding: 1em 2em;
       background: #39f;
       color: white;
-      font-size: 1.1em;
+      font-size: 1em;
       font-weight: bold;
       border: none;
       border-radius: 6px;
@@ -66,8 +59,7 @@
     }
 
     #result {
-      margin: 1em auto;
-      text-align: center;
+      margin-top: 1em;
       font-size: 1.1em;
       font-weight: bold;
     }
@@ -75,17 +67,15 @@
 </head>
 <body>
 
-  <input type="file" accept="image/*" capture="environment" id="camera-input" style="display: none;" />
-
+  <input type="file" accept="image/*" capture="environment" id="camera-input" style="display: none;">
+  
   <div id="button-bar">
-    <button id="capture-btn">Tirar</button>
+    <button id="capture-btn">Foto</button>
     <button id="ocr-btn">Ler Texto</button>
   </div>
 
   <div id="container">
-    <div id="image-wrapper">
-      <img id="preview" src="" alt="Pré-visualização" />
-    </div>
+    <img id="preview" src="" alt="Pré-visualização">
     <div id="ocr-region"></div>
   </div>
 
@@ -97,13 +87,8 @@
   <script>
     const input = document.getElementById('camera-input');
     const preview = document.getElementById('preview');
-    const wrapper = document.getElementById('image-wrapper');
-    const ocrBtn = document.getElementById('ocr-btn');
     const resultDiv = document.getElementById('result');
-
-    let scale = 1;
-    let originX = 0;
-    let originY = 0;
+    const ocrBtn = document.getElementById('ocr-btn');
 
     document.getElementById('capture-btn').addEventListener('click', () => {
       input.click();
@@ -117,123 +102,56 @@
       img.src = URL.createObjectURL(file);
       img.onload = function () {
         preview.src = img.src;
-        preview.onload = () => {
-          scale = 1;
-          originX = 0;
-          originY = 0;
-          wrapper.style.transform = `translate(0px, 0px) scale(1)`;
-          resultDiv.textContent = 'Ajuste o zoom/pan e depois clique em "Ler Texto".';
-        };
+        resultDiv.textContent = 'Ajuste a imagem se necessário e clique em "Ler Texto".';
       };
     });
 
-    <script>
-  ocrBtn.addEventListener('click', async function () {
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = preview;
+    ocrBtn.addEventListener('click', async function () {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = preview;
 
-    // Define dimensões do canvas igual às dimensões naturais da imagem
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
 
-    // Aumentar contraste e converter para escala de cinzentos
-    ctx.filter = 'grayscale(100%) contrast(200%)';
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Aumentar contraste e converter para escala de cinzentos
+      ctx.filter = 'grayscale(100%) contrast(200%)';
+      ctx.drawImage(img, 0, 0);
 
-    // Coordenadas da região OCR no container
-    const containerRect = document.getElementById('container').getBoundingClientRect();
-    const regionRect = document.getElementById('ocr-region').getBoundingClientRect();
+      const containerRect = document.getElementById('container').getBoundingClientRect();
+      const regionRect = document.getElementById('ocr-region').getBoundingClientRect();
 
-    const xRatio = img.naturalWidth / containerRect.width;
-    const yRatio = img.naturalHeight / containerRect.height;
+      const xRatio = img.naturalWidth / containerRect.width;
+      const yRatio = img.naturalHeight / containerRect.height;
 
-    const region = {
-      x: (regionRect.left - containerRect.left) * xRatio,
-      y: (regionRect.top - containerRect.top) * yRatio,
-      w: regionRect.width * xRatio,
-      h: regionRect.height * yRatio
-    };
+      const region = {
+        x: (regionRect.left - containerRect.left) * xRatio,
+        y: (regionRect.top - containerRect.top) * yRatio,
+        w: regionRect.width * xRatio,
+        h: regionRect.height * yRatio
+      };
 
-    // Recorte da região OCR
-    const cropped = ctx.getImageData(region.x, region.y, region.w, region.h);
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = region.w;
-    tempCanvas.height = region.h;
-    tempCanvas.getContext('2d').putImageData(cropped, 0, 0);
+      const cropped = ctx.getImageData(region.x, region.y, region.w, region.h);
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = region.w;
+      tempCanvas.height = region.h;
+      tempCanvas.getContext('2d').putImageData(cropped, 0, 0);
 
-    // Mostrar estado
-    resultDiv.textContent = 'A processar…';
+      resultDiv.textContent = 'A processar…';
 
-    // OCR com idioma português e modo de linha única
-    try {
-      const { data: { text } } = await Tesseract.recognize(
-        tempCanvas,
-        'por',
-        {
-          logger: m => console.log(m),
-          tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE
-        }
-      );
-
-      resultDiv.textContent = 'Resultado: "' + text.trim() + '"';
-    } catch (err) {
-      resultDiv.textContent = 'Erro no OCR: ' + err.message;
-    }
-  });
-
-    // Zoom por gesto (pinça)
-    let initialDistance = 0;
-    let initialScale = 1;
-
-    document.getElementById('container').addEventListener('touchstart', e => {
-      if (e.touches.length === 2) {
-        initialDistance = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
+      try {
+        const { data: { text } } = await Tesseract.recognize(
+          tempCanvas,
+          'por',
+          {
+            logger: m => console.log(m),
+            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE
+          }
         );
-        initialScale = scale;
+        resultDiv.textContent = 'Resultado: "' + text.trim() + '"';
+      } catch (err) {
+        resultDiv.textContent = 'Erro no OCR: ' + err.message;
       }
-    });
-
-    document.getElementById('container').addEventListener('touchmove', e => {
-      if (e.touches.length === 2) {
-        e.preventDefault();
-        const newDistance = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-        scale = Math.min(Math.max(0.5, initialScale * newDistance / initialDistance), 5);
-        wrapper.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
-      }
-    }, { passive: false });
-
-    // Pan com um dedo
-    let lastX = 0, lastY = 0, isPanning = false;
-
-    document.getElementById('container').addEventListener('touchstart', e => {
-      if (e.touches.length === 1) {
-        isPanning = true;
-        lastX = e.touches[0].clientX;
-        lastY = e.touches[0].clientY;
-      }
-    });
-
-    document.getElementById('container').addEventListener('touchmove', e => {
-      if (isPanning && e.touches.length === 1) {
-        e.preventDefault();
-        const dx = e.touches[0].clientX - lastX;
-        const dy = e.touches[0].clientY - lastY;
-        originX += dx;
-        originY += dy;
-        wrapper.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
-        lastX = e.touches[0].clientX;
-        lastY = e.touches[0].clientY;
-      }
-    }, { passive: false });
-
-    document.getElementById('container').addEventListener('touchend', e => {
-      isPanning = false;
     });
   </script>
 </body>
