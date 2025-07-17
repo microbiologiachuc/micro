@@ -74,14 +74,30 @@
       font-size: 1.1em;
       font-weight: bold;
     }
+
+    #button-bar {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      margin-top: 1em;
+    }
+    
+    #button-bar button {
+      margin: 0; /* remove margem vertical para alinhar horizontalmente */
+    }
+
+    
   </style>
 </head>
 <body>
 
   <!-- Botões -->
   <input type="file" accept="image/*" capture="environment" id="camera-input" style="display: none;">
-  <button id="capture-btn">Tirar Foto</button>
+ 
+  <div id="button-bar">
+  <button id="capture-btn">Foto</button>
   <button id="ocr-btn" style="display: none;">Ler Texto</button>
+</div>
 
   <!-- Área da imagem com região OCR -->
   <div id="container">
