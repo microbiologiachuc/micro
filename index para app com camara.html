@@ -45,7 +45,7 @@
     #ocr-region {
       position: absolute;
       width: 60vw;
-      height: 10vw;
+      height: 5vw; /* <== Altura reduzida */
       left: 50%;
       top: 40%;
       transform: translate(-50%, -50%);
@@ -69,8 +69,8 @@
   <input type="file" accept="image/*" capture="environment" id="camera-input" style="display:none;" />
   
   <div id="button-bar">
-    <button id="capture-btn">Tirar Foto</button>
-    <button id="ocr-btn">Texto</button>
+    <button id="capture-btn">Fotografar</button>
+    <button id="ocr-btn">Ler Texto</button>
   </div>
 
   <div id="container">
@@ -164,7 +164,7 @@
       preview.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
     }
 
-    // Pan e zoom (gestos com dedos)
+    // Pan e zoom por toque
     const container = document.getElementById("container");
 
     container.addEventListener("touchmove", function (e) {
