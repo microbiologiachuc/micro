@@ -2,201 +2,133 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>OCR com Região Centralizada</title>
+  <title>OCR com Câmara Nativa</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      margin: 0; padding: 0; background: #fff; color: #222;
-      font-family: Calibri;
+      margin: 0;
+      padding: 0;
+      font-family: Calibri, sans-serif;
+      background: #fff;
     }
-    #camera-container {
+    #container {
       position: relative;
-      width: 100vw; max-width: 100vw;
-      height: 60vw; max-height: 80vh;
-      background: #000;
+      width: 100vw;
+      height: 80vh;
+      background: #eee;
       overflow: hidden;
-      margin: 1em auto 0 auto;
-      touch-action: none;
-    }
-    #video {
-      width: 100vw; max-width: 100vw;
-      height: 60vw; max-height: 80vh;
-      object-fit: cover;
-      display: block;
-      background: #000;
-    }
-    #reference-region {
-      position: absolute;
-      width: 40vw; height: 5vw;
-      left: 50%; top: 28%;
-      transform: translate(-50%, -50%);
-      border: 2.5px dashed #39f;
-      background: rgba(0,60,255,0.10);
-      border-radius: 8px;
-      pointer-events: none;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2em;
-      color: #39f;
-      font-weight: bold;
     }
     #ocr-region {
       position: absolute;
-      width: 50vw; height: 5vw;
-      left: 50%; top: 50%;
+      width: 60vw;
+      height: 10vw;
+      left: 50%;
+      top: 40%;
       transform: translate(-50%, -50%);
-      border: 2.5px solid #ffd600;
-      background: rgba(255,255,0,0.10);
-      border-radius: 8px;
+      border: 2px dashed #ffb800;
+      background: rgba(255, 255, 0, 0.1);
+      z-index: 2;
       pointer-events: none;
-      z-index: 3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    }
+    #preview {
+      max-width: 100%;
+      max-height: 80vh;
+      display: block;
+      margin: auto;
+      object-fit: contain;
     }
     #capture-btn {
-      width: 70vw; max-width: 400px;
-      margin: 0.5em auto 0 auto; display: block;
-      background: #abdaf5; color: #222;
-      border: none; font-size: 1.2em;
-      padding: 1em 0.5em; border-radius: 6px;
-      font-weight: bold; cursor: pointer;
-      box-shadow: 0 3px 8px #0002;
-    }
-    #capture-btn:active {
-      background: #ffb800;
-    }
-    #loading {
-      display: none; text-align: center;
-      margin-top: 0.5em; color: #ffd600;
-      font-weight: bold; font-size: 1.2em;
-    }
-    #image-result-region {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 10px auto 0 auto;
-      background: #f7f7f7;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px #0002;
-      overflow: hidden;
-      width: 95vw;
-      height: 30vh;
-    }
-    #image-result-region img {
       display: block;
-      max-width: 100%;
-      max-height: 30vh;
-      object-fit: contain;
-      border-radius: 10px;
-      background: #fff;
-      box-shadow: 0 2px 8px #0001;
+      margin: 1em auto 0 auto;
+      padding: 1em 2em;
+      background: #39f;
+      color: white;
+      font-size: 1.1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #result {
+      margin: 1em auto;
+      text-align: center;
+      font-size: 1.1em;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div id="camera-container">
-    <video id="video" autoplay playsinline></video>
-    <div id="reference-region">«- código barras -»</div>
+
+  <!-- Botão que ativa a câmara -->
+  <input type="file" accept="image/*" capture="environment" id="camera-input" style="display: none;">
+  <button id="capture-btn">Tirar Foto</button>
+
+  <!-- Região de OCR -->
+  <div id="container">
+    <img id="preview" src="" alt="Pré-visualização">
     <div id="ocr-region"></div>
   </div>
-  <div id="image-result-region"></div>
-  <button id="capture-btn">TESTE</button>
-  <div id="loading">A verificar…</div>
-  <canvas id="canvas" style="display:none;"></canvas>
+
+  <div id="result">Resultado aparecerá aqui…</div>
+
+  <canvas id="canvas" style="display: none;"></canvas>
 
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <script>
-    const video = document.getElementById('video');
+    const input = document.getElementById('camera-input');
+    const preview = document.getElementById('preview');
+    const resultDiv = document.getElementById('result');
 
-    function startCamera() {
-      const constraints = {
-        video: { facingMode: { ideal: 'environment' } },
-        audio: false
-      };
+    document.getElementById('capture-btn').addEventListener('click', () => {
+      input.click();
+    });
 
-      navigator.mediaDevices.getUserMedia(constraints)
-        .then(stream => video.srcObject = stream)
-        .catch(() => {
-          alert('A câmara não pôde ser iniciada. Tenta num navegador com permissões ou HTTPS.');
-        });
-    }
-    startCamera();
+    input.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
 
-    const textToImageMap = {
-      "c.esterilizado": "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg",
-      "banana": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg",
-      "orange": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Orange-Fruit-Pieces.jpg"
-    };
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = async function () {
+        preview.src = img.src;
 
-    document.getElementById('capture-btn').onclick = async function () {
-      const loading = document.getElementById('loading');
-      loading.style.display = 'block';
-      document.getElementById('ocr-region').innerHTML = '';
-      document.getElementById('image-result-region').innerHTML = '';
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
 
-      const videoRect = video.getBoundingClientRect();
-      const ocrRect = document.getElementById('ocr-region').getBoundingClientRect();
+        // Calcular a região OCR proporcional
+        const region = {
+          x: img.width * 0.20,
+          y: img.height * 0.40,
+          w: img.width * 0.60,
+          h: img.height * 0.10
+        };
 
-      const sx = ocrRect.left - videoRect.left;
-      const sy = ocrRect.top - videoRect.top;
-      const sw = ocrRect.width;
-      const sh = ocrRect.height;
+        const cropped = ctx.getImageData(region.x, region.y, region.w, region.h);
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = region.w;
+        tempCanvas.height = region.h;
+        tempCanvas.getContext('2d').putImageData(cropped, 0, 0);
 
-      const scaleX = video.videoWidth / videoRect.width;
-      const scaleY = video.videoHeight / videoRect.height;
+        resultDiv.textContent = 'A processar…';
 
-      const canvas = document.getElementById('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const cropped = ctx.getImageData(
-        sx * scaleX, sy * scaleY, sw * scaleX, sh * scaleY
-      );
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = cropped.width;
-      tempCanvas.height = cropped.height;
-      tempCanvas.getContext('2d').putImageData(cropped, 0, 0);
-
-      try {
-        const { data: { text } } = await Tesseract.recognize(
-          tempCanvas,
-          'por',
-          {
-            logger: m => console.log(m),
-            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
-            params: {
-              tessedit_char_blacklist: '0123456789#$%',
-              tessedit_char_whitelist: 'abcdefghijklmnopqrstuvwxyzçABCDEFGHIJKLMNOPQRSTUVWXYZÇ'
+        try {
+          const { data: { text } } = await Tesseract.recognize(
+            tempCanvas,
+            'por',
+            {
+              logger: m => console.log(m),
+              tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE
             }
-          }
-        );
-        loading.style.display = 'none';
-        const recognized = text.trim().toLowerCase();
-        const imgUrl = textToImageMap[recognized];
-        const imageRegion = document.getElementById('image-result-region');
-
-        if (imgUrl) {
-          const img = new window.Image();
-          img.src = imgUrl;
-          img.alt = recognized;
-          img.onload = function () {
-            imageRegion.innerHTML = '';
-            imageRegion.appendChild(img);
-          };
-        } else {
-          imageRegion.innerHTML = `<div style="text-align:center; color:black; font-weight:bold;">Sem correspondência para: "${recognized || '[vazio]'}".<br>Tente novamente.</div>`;
+          );
+          resultDiv.textContent = 'Resultado: "' + text.trim() + '"';
+        } catch (err) {
+          resultDiv.textContent = 'Erro no OCR: ' + err.message;
         }
-      } catch (e) {
-        loading.style.display = 'none';
-        document.getElementById('image-result-region').innerHTML =
-          '<span style="color:#c00;">OCR falhou: ' + e.message + '</span>';
-      }
-    };
+      };
+    });
   </script>
 </body>
 </html>
