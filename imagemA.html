@@ -130,13 +130,21 @@
     "c. esterilizado": "https://raw.githubusercontent.com/frade123456/micro/main/c_esterilizado.png",
   };
 
+  // Novo objeto para mapear URLs
+  const urlMap = {
+    "zaragatoa meio trans": "https://exemplo.com/zaragatoa",
+    "c. esterilizado": "https://exemplo.com/c-esterilizado",
+  };
+
   const searchInput = document.getElementById("searchInput");
   const defaultText = "1. Inserir texto assinalado";
+  const img = document.getElementById("result");
+  const placeholder = document.getElementById("placeholderText");
 
   // Sempre que houver clique/toque, limpa o campo
-searchInput.addEventListener("pointerdown", function () {
-  this.value = "";
-});
+  searchInput.addEventListener("pointerdown", function () {
+    this.value = "";
+  });
 
   // Se sair do campo sem escrever nada, repõe o texto por defeito
   searchInput.addEventListener("blur", function () {
@@ -150,23 +158,33 @@ searchInput.addEventListener("pointerdown", function () {
 
     const input = searchInput.value.trim().toLowerCase();
 
-    const img = document.getElementById("result");
-    const placeholder = document.getElementById("placeholderText");
-
     if (imageMap[input]) {
       img.src = imageMap[input];
       img.alt = input;
       img.style.display = "block";
       placeholder.style.display = "none";
+
+      // Atualiza o atributo data-url para a imagem
+      img.dataset.url = urlMap[input] || null;
     } else {
       img.style.display = "none";
       placeholder.style.display = "block";
       alert("Nenhuma imagem encontrada. Tente novamente.");
       searchInput.value = defaultText;
       searchInput.blur(); // tira o foco
+      img.dataset.url = null; // remove url se imagem não encontrada
     }
   }
+
+  // Evento para abrir a URL ao clicar na imagem, se existir
+  img.addEventListener("click", function () {
+    const url = this.dataset.url;
+    if (url) {
+      window.open(url, "_blank");
+    }
+  });
 </script>
+
 
 
 
