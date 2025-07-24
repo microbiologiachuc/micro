@@ -132,7 +132,7 @@
 
   // Novo objeto para mapear URLs
   const urlMap = {
-    "zaragatoa meio trans": "https://exemplo.com/zaragatoa",
+    "zaragatoa meio trans": "",
     "c. esterilizado": "https://drive.google.com/file/d/1bZ7TRORGZ6s0DfUnzfqudRQt6prSPu2Q/view?usp=drive_link",
   };
 
@@ -169,7 +169,7 @@
     } else {
       img.style.display = "none";
       placeholder.style.display = "block";
-      alert("Nenhuma imagem encontrada. Tente novamente.");
+      alert("Nenhuma imagem encontrada.");
       searchInput.value = defaultText;
       searchInput.blur(); // tira o foco
       img.dataset.url = null; // remove url se imagem não encontrada
