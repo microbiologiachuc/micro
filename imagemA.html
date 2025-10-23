@@ -204,60 +204,36 @@
 
 
 
+  function showImage(event) {
+    event.preventDefault();
 
+    const input = searchInput.value.trim().toLowerCase();
 
+    if (imageMap[input]) {
+      img.src = imageMap[input];
+      img.alt = input;
+      img.style.display = "block";
+      placeholder.style.display = "none";
 
-
-
-
-
-    
-
-
-    
-// Função que normaliza: trim, toLowerCase e remove acentos
-function normalizeText(text) {
-  return text
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')                // decompor caracteres acentuados
-    .replace(/[\u0300-\u036f]/g, ''); // remover marcas diacríticas
-}
-
-    // Exemplo: usar na função showImage
-function showImage(event) {
-  event.preventDefault();
-
-  const input = normalizeText(searchInput.value);
-
-  // Usa um mapa normalizado (ver mais abaixo)
-  if (normalizedImageMap[input]) {
-    img.src = normalizedImageMap[input];
-    img.alt = input;
-    img.style.display = "block";
-    placeholder.style.display = "none";
-
-    img.dataset.url = normalizedUrlMap[input] || null;
-  } else {
-    img.style.display = "none";
-    placeholder.style.display = "block";
-    alert("Nenhuma imagem encontrada.");
-    searchInput.value = defaultText;
-    searchInput.blur();
-    img.dataset.url = null;
+      // Atualiza o atributo data-url para a imagem
+      img.dataset.url = urlMap[input] || null;
+    } else {
+      img.style.display = "none";
+      placeholder.style.display = "block";
+      alert("Nenhuma imagem encontrada.");
+      searchInput.value = defaultText;
+      searchInput.blur(); // tira o foco
+      img.dataset.url = null; // remove url se imagem não encontrada
+    }
   }
-}
 
-
-
-
-
-
-
-
-    
-
-
+  // Evento para abrir a URL ao clicar na imagem, se existir
+  img.addEventListener("click", function () {
+    const url = this.dataset.url;
+    if (url) {
+      window.open(url, "_blank");
+    }
+  });
 
 
 
