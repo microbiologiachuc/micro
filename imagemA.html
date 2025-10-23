@@ -153,8 +153,8 @@
     "mening/pneu plasma": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/edta_2.7ml.png",
     "men/pneum l.pleu/out": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/cont._esteril_(ji).png",
     "mycoplasma/chlam": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/cont._esteril_(ji).png",
+                                   // "mycoplasma/chlam": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/dst_-_t._multiplo.png", // adiconar info para outra colheita
     "micopl.": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/micopl.png",
-    "mycoplasma/chlam": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/dst_-_t._multiplo.png",
     "mrsa": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/mrsa.png",
     "m.zar. exs nasal": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/mrsa.png",
     "m.zar. vaginal-rect": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/strepb.png",
@@ -188,7 +188,7 @@
   };
 
   const searchInput = document.getElementById("searchInput");
-  const defaultText = "1. Inserir texto assinalado";
+  const defaultText = "2. Inserir material de colheita";
   const img = document.getElementById("result");
   const placeholder = document.getElementById("placeholderText");
 
@@ -225,7 +225,7 @@
       alert("Nenhuma imagem encontrada.");
       searchInput.value = defaultText;
       searchInput.blur(); // tira o foco
-      img.dataset.url = null; // remove url se imagem não encontrada
+     // img.dataset.url = null; // remove url se imagem não encontrada
     }
   }
 
