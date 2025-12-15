@@ -30,19 +30,21 @@
       display: block;
     }
 
+    /* Mantém o botão abaixo (coluna) mas não faz input/button ocuparem 100%:
+       centraliza e usa larguras fixas (input 70% do container, botão tamanho natural/min) */
     .search-box {
       margin-bottom: 20px;
       display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column; /* empilha input e botão (botão abaixo) */
+      align-items: center;    /* centra os elementos sem esticar */
       gap: 10px;
     }
 
     .search-box input[type="text"] {
       font-size: 1.0em;
       padding: 12px;
-      width: 70%;
+      width: 70%; /* mantém o tamanho original aproximado */
+      max-width: 420px;
       box-sizing: border-box;
       background-color: #fff;
       color: #333;
@@ -53,8 +55,10 @@
 
     .search-box button {
       font-size: 1.0em;
-      padding: 14px 24px;
-      border-radius: 1px;
+      padding: 12px 24px;
+      width: auto;            /* não ocupa toda a largura */
+      min-width: 140px;       /* garante um tamanho mínimo consistente */
+      border-radius: 3px;
       background: #83a321;
       color: #fff;
       border: none;
@@ -63,7 +67,7 @@
     }
 
     .search-box button:hover {
-      background: #83a321;
+      background: #6f8f18;
     }
 
     #imageContainer {
@@ -164,7 +168,7 @@
           value="2. Inserir material de colheita"
           required
         />
-    <button type="submit">3. Enter</button>
+      <button type="submit">3. Enter</button>
     </form>
   </div>
 
@@ -238,17 +242,6 @@
     "zarag em meio adeq": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/dst_-_t._multiplo.png",
     "zarag ags varios": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/ags.png",
     "zarag t.vir (pcr)": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/covid.png",
-   
-    // "zarag ags vários": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/ags.png",
-    // "p.cristais": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/contentor.png",
-    // "m.zar. vaginal-rect": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/strepb.png",    
-    // "frasco portagermen": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/portagermen.png",    
-    // "exsudado uretral": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/exsudado_uretral.png",
-    // "zaragatoa meio trans": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/zaragatoa_meio_trans.png",
-    // "zar. meio transporte": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/zaragatoa_meio_trans.png",
-    // "zaragatoa": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/zaragatoa_meio_trans.png",
-    // "micopl.": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/micopl.png",
-    // "mycoplasma/chlam": "https://raw.githubusercontent.com/microbiologiachuc/micro/main/dst_-_t._multiplo.png", // adiconar info para outra colheita
   };
 
   // Novo objeto para mapear URLs
