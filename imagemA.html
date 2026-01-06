@@ -267,7 +267,7 @@
   const modalOk = document.querySelector('[data-modal-ok]');
 
   function showModal(message) {
-    modalMessage.textContent = message;
+    modalMessage.innerHTML = message; // agora aceita HTML
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     // set focus for accessibility
