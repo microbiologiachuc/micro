@@ -6,150 +6,72 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #fafbfc;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      margin: 0; font-family: sans-serif; background: #fafbfc; min-height: 100vh; display: flex; flex-direction: column;
       align-items: center;
     }
 
     .container {
-      width: 100%;
-      max-width: 600px;
-      padding: 10px;
-      box-sizing: border-box;
+      width: 100%; max-width: 600px; padding: 10px; box-sizing: border-box;
     }
 
     .top-img {
-      width: 90%;
-      max-height: 50vh;
-      object-fit: cover;
-      margin: 0 auto 40px auto;
-      display: block;
+      width: 90%; max-height: 50vh; object-fit: cover; margin: 0 auto 40px auto; display: block;
     }
 
     /* Mantém o botão abaixo (coluna) mas não faz input/button ocuparem 100%:
        centraliza e usa larguras fixas (input 70% do container, botão tamanho natural/min) */
     .search-box {
-      margin-bottom: 20px;
-      display: flex;
-      flex-direction: column; /* empilha input e botão (botão abaixo) */
-      align-items: center;    /* centra os elementos sem esticar */
+      margin-bottom: 20px; display: flex; flex-direction: column; align-items: center;
       gap: 10px;
     }
 
     .search-box input[type="text"] {
-      font-size: 1.0em;
-      padding: 12px;
-      width: 70%; /* mantém o tamanho original aproximado */
-      max-width: 420px;
-      box-sizing: border-box;
-      background-color: #fff;
-      color: #333;
-      border: 1px solid #83a321;
-      border-radius: 3px;
-      margin-bottom: 0;
+      font-size: 1.0em; padding: 12px; width: 70%; max-width: 420px; box-sizing: border-box; background-color: #fff; color: #333; border: 1px solid #ff9429; border-radius: 3px; margin-bottom: 0;
     }
 
     .search-box button {
-      font-size: 1.0em;
-      padding: 12px 24px;
-      width: auto;            /* não ocupa toda a largura */
-      min-width: 140px;       /* garante um tamanho mínimo consistente */
-      border-radius: 3px;
-      background: #83a321;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      transition: background 0.2s;
+      font-size: 1.0em; padding: 12px 24px; width: auto; min-width: 140px; border-radius: 3px; background: #ff9429; color: #fff; border: none; cursor: pointer; transition: background 0.2s;
     }
 
     .search-box button:hover {
-      background: #6f8f18;
+      background: #e86915;
     }
 
     #imageContainer {
-      width: 100%;
-      max-width: 600px;
-      height: 30vh;
-      background: #5d9ad3;
-      margin-top: 0.1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 1.2em;
-      position: relative;
-      overflow: hidden;
-      padding: 0.5rem;
+      width: 100%; max-width: 600px; height: 30vh; background: #5d9ad3; margin-top: 0.1rem; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2em; position: relative; overflow: hidden; padding: 0.5rem;
     }
 
     #result {
-      max-height: 100%;
-      max-width: 100%;
-      object-fit: contain;
-      display: none;
-      position: static;
+      max-height: 100%; max-width: 100%; object-fit: contain; display: none; position: static;
     }
 
-    /* Modal styles */
+/* Modal styles */
     .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center;
     }
     .modal.open {
       display: flex;
     }
     .modal-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.4);
+      position: absolute; inset: 0; background: rgba(0,0,0,0.4);
     }
     .modal-content {
-      position: relative;
-      background: #fff;
-      color: #111;
-      max-width: 80%;
-      width: 420px;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      z-index: 1001;
-      text-align: left;
+      position: relative; background: #fff; color: #111; max-width: 80%; width: 420px; padding: 20px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1001; text-align: left;
     }
     .modal-close {
-      position: absolute;
-      right: 10px;
-      top: 6px;
-      border: none;
-      background: transparent;
-      font-size: 22px;
-      cursor: pointer;
-      color: #666;
+      position: absolute; right: 10px; top: 6px; border: none; background: transparent; font-size: 22px; cursor: pointer; color: #666;
     }
     .modal p {
-      margin: 0;
-      line-height: 1.4;
+      margin: 0; line-height: 1.4;
     }
     .modal-actions {
-      margin-top: 12px;
-      text-align: right;
+      margin-top: 12px; text-align: right;
     }
     .btn-ok {
-      background: #83a321;
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 4px;
-      cursor: pointer;
+      background: #83a321; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer;
     }
 
+    
   </style>
 </head>
 <body>
@@ -292,6 +214,20 @@
   searchInput.addEventListener("focus", function () {
     this.value = "";
   });
+
+
+searchInput.addEventListener("focus", function () {
+  this.value = "";
+  // Mostrar o placeholder por defeito
+  placeholder.style.display = "block";
+  // Esconder a imagem
+  img.style.display = "none";
+  img.src = "";
+  img.dataset.url = null;
+});
+
+
+   
 
   // Se sair do campo sem escrever nada, repõe o texto por defeito
   searchInput.addEventListener("blur", function () {
