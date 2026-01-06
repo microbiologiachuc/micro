@@ -227,6 +227,20 @@
     this.value = "";
   });
 
+
+searchInput.addEventListener("focus", function () {
+  this.value = "";
+  // Mostrar o placeholder por defeito
+  placeholder.style.display = "block";
+  // Esconder a imagem
+  img.style.display = "none";
+  img.src = "";
+  img.dataset.url = null;
+});
+
+
+   
+
   // Se sair do campo sem escrever nada, repõe o texto por defeito
   searchInput.addEventListener("blur", function () {
     if (this.value.trim() === "") {
